@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Canvas Test</title>
+</head>
+<body>
+<canvas id="myCanvas" width="640" height="480"></canvas>
+<script src="my_wasm_module.js"></script>
+<script>
+    const canvas = document.getElementById('myCanvas');
+    Module['canvas'] = canvas;
+
+    // Optionally set up event listeners
+    canvas.addEventListener('mousedown', (e) => {
+        // A typical approach is to call C++ through a binding:
+        // _OnMouseDown(e.clientX, e.clientY);
+    });
+
+    // Or rely on emscripten_set_mousedown_callback in C++ side
+
+    // Wait for the WASM to be ready
+    Module['onRuntimeInitialized'] = function() {
+       // Here you might call a C++ function: _InitApp();
+       // Or if your main() is compiled to run automatically, that might handle it
+    };
+</script>
+</body>
+</html>
