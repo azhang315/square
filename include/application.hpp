@@ -12,9 +12,15 @@ public:
     Application();
     ~Application();
 
-    // Initialize subsystems
+    // initialize subsystems
     void init();
-    static void one_iter();
+    static void one_iter(); // main
+
+    static void handle_input_event(const InputEvent& event); // event callback
+
+    // Events processing
+    // static void process_event_mouse_down(const InputEvent& event);
+    // ...
 private:
     std::unique_ptr<Render> m_render;
     std::unique_ptr<Input> m_input;
