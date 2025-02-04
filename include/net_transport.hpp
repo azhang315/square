@@ -30,10 +30,4 @@ public:
 protected: 
     /* Notifier Interface (Publishes to Listeners) */
     void notify_listeners(const EventType& event_type, void* e_data); 
-
-    /* Example usage:
-    void on_event(network recv) {
-        notify_listeners(EventType{}, 0);
-    }
-    */
 };

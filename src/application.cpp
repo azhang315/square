@@ -14,24 +14,24 @@ void Application::init() {
     m_net_transport = std::make_unique<NetTransport>();
     m_replication = std::make_unique<Replication>();
     m_canvas = std::make_unique<Canvas>();
+
+    // Input events
+    add_listener(EventType::MouseDown, m_input.get(), m_net_transport.get());
+    add_listener(EventType::MouseDown, m_input.get(), m_canvas.get());
+
+    // Render events
+    add_listener(EventType::CanvasUpdated, m_canvas.get(), m_render.get()); // UI updated - batch diff, set dirty
 }
-void Application::handle_input_event(const InputEvent& e) {
-    switch (e.code) {
-        case InputCode::MouseDown:
-        process_event_mouse_down(e);
-        break;
-        case InputCode::MouseUp:
-        process_event_mouse_up(e);
-        break;
-    }
-}
-inline void process_event_mouse_down(const InputEvent& e) {
-    // m_current_states[InputCode::MouseDown] = true;
-    m_canvas->draw_pixel(x, y, color);
-    m_net_transport->send_mouse_event(x, y, color);
-}
-inline void Application::process_event_mouse_up(const InputEvent& e) {
-    // m_current_states[InputCode::MouseDown] = false;
+
+
+template <typename Tn, typename Tl>
+static inline void add_listener(EventType e_type, Tn* notifier, Tl* listener) {
+    static_assert(std::is_base_of_v<EventNotifierMixIn<Tn>, Tn>, 
+                  "Notifier must derive from EventNotifierMixIn");
+    static_assert(std::is_base_of_v<EventListenerMixIn<Tl>, Tl>, 
+                  "Listener must derive from EventListenerMixIn");
+    
+    notifier->add_listener(e_type, notifier, listener);
 }
 
 
@@ -55,7 +55,4 @@ void Application::one_iter() {
 
     // 4. Send/Receive Network Events
     net_transport.process_network_events();
-
-
-
 }

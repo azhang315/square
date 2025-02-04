@@ -12,8 +12,6 @@ public:
     Application();
     ~Application();
 
-    // initialize subsystems
-    void init();
     static void one_iter(); // main
 
     static void handle_input_event(const InputEvent& event); // event callback
@@ -22,6 +20,7 @@ public:
     // static void process_event_mouse_down(const InputEvent& event);
     // ...
 private:
+    void init();
     std::unique_ptr<Render> m_render;
     std::unique_ptr<Input> m_input;
     std::unique_ptr<NetTransport> m_net_transport;

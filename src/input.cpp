@@ -3,20 +3,21 @@
 #include <iostream>
 #include <emscripten/html5.h>
 
-Input::Input(EventCallback f) {
-    set_event_callback(f);
-}
 void Input::init() {
     m_current_states[InputCode::MouseDown] = false;
     emscripten_set_mousedown_callback("#canvas", this, true, on_mouse_down);
     emscripten_set_mouseup_callback("#canvas", this, true, on_mouse_up);
 }
 static EM_BOOL on_mouse_down(int eventType, const EmscriptenMouseEvent* e, void* userData) {
-    process_event_mouse_down(InputEvent{InputCode::MouseDown, e->clientX, e->clientY});
+    // process_event_mouse_down(InputEvent{InputCode::MouseDown, e->clientX, e->clientY});
+    EventNotifierMixIn::notify_listeners(EventType::MouseDown, e_data); // e.g., call Listeners (canvas, net) functions
+
     return EM_TRUE;
 }
 static EM_BOOL on_mouse_up(int eventType, const EmscriptenMouseEvent* e, void* userData) {
-    process_event_mouse_up(InputEvent{InputCode::MouseUp, e->clientX, e->clientY});
+    // process_event_mouse_up(InputEvent{InputCode::MouseUp, e->clientX, e->clientY});
+    // TODO: make into nice event struct
+    EventNotifierMixIn::notify_listeners(EventType::MouseUp, e_data); // e.g., call Listeners (canvas, net) functions
     return EM_TRUE
 }
 
@@ -53,26 +54,31 @@ bool Input::poll_one_event(InputEvent& out_event) {
     return false;
 }
 
-void Input::set_event_callback(EventCallback callback) {
-    m_event_callback = callback;
+
+// Batched Events
+void Input::process_event(const InputEvent& e) {
+    switch (event.code) {
+        // MouseDown, MouseUp served immediately
+        // case InputCode::MouseDown:
+        // process_event_mouse_down(event);
+        // EventNotifierMixIn::notify_listeners(e_type, e_data); // e.g., call Listeners (canvas, net) functions
+        // break;
+        // case InputCode::MouseUp:
+        // process_event_mouse_up(event);
+        // EventNotifierMixIn::notify_listeners(e_type, e_data);
+        // break;
+
+        case EventType::NetworkUpdateErr:
+    }
 }
 
-// void Input::process_event(const InputEvent& event) {
-//     switch (event.code) {
-//         case InputCode::MouseDown:
-//         process_event_mouse_down(event);
-//         break;
-//         case InputCode::MouseUp:
-//         process_event_mouse_up(event);
-//         break;
-//     }
 
-// }
-// inline void Input::process_event_mouse_down(InputEvent event) {
-//     m_current_states[InputCode::MouseDown] = true;
+// static inline void process_event_mouse_down(InputEvent event) {
+//     // m_current_states[InputCode::MouseDown] = true;
+    
 //     canvas_manager->draw_pixel(x, y, color);
 //     net_transport->send_mouse_event(x, y, color);
 // }
-// inline void Input::process_event_mouse_up(InputEvent event) {
+// static inline void process_event_mouse_up(InputEvent event) {
 //     m_current_states[InputCode::MouseDown] = false;
 // }
