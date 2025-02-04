@@ -9,18 +9,24 @@ Application::Application()
 }
 
 void Application::init() {
-    m_render = std::make_unique<Render>();
-    m_input = std::make_unique<Input>(std::function<void(const InputEvent&)>(handle_input_event));
+    // m_render = std::make_unique<Render>();
+    m_input = std::make_unique<Input>();
     m_net_transport = std::make_unique<NetTransport>();
     m_replication = std::make_unique<Replication>();
     m_canvas = std::make_unique<Canvas>();
 
-    // Input events
-    add_listener(EventType::MouseDown, m_input.get(), m_net_transport.get());
+    /* Input Events */
+    // Input -> Canvas
     add_listener(EventType::MouseDown, m_input.get(), m_canvas.get());
 
-    // Render events
-    add_listener(EventType::CanvasUpdated, m_canvas.get(), m_render.get()); // UI updated - batch diff, set dirty
+    // Canvas -> Network
+    add_listener(EventType::CanvasUpdate, m_canvas.get(), m_net_transport.get());
+
+    // Canvas -> Render
+    add_listener(EventType::CanvasUpdate, m_canvas.get(), m_render.get()); // UI updated - batch diff, set dirty
+
+    // Network -> Canvas
+    add_listener(EventType::MouseDown, m_net_transport.get(), m_canvas.get());
 }
 
 
@@ -39,20 +45,20 @@ void Application::one_iter() {
     // float delta_time = get_frame_time();
     
 
-    // 1. Input Events (Mouse, network)
-    // m_input->update();
-    m_input;
+    // 1. Queued Event Processing
+    m_input->update(); // poll new inputs
 
     //            input
     //              |
-    //             / \
-    //          net   canvas
+    //               \
+    //          net<->canvas
+
+    // Batched: Network Events
+    // Batched: Synchronization Processing
 
     // 3. Render Frame
-    if (render_dirty) {
-        renderer.draw();
-    }
+    m_canvas->draw();
 
-    // 4. Send/Receive Network Events
-    net_transport.process_network_events();
+    // 4. Send/Receive Network Events - async - no batching for now
+    // net_transport.process_network_events();
 }

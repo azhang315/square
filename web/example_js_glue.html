@@ -24,6 +24,11 @@
        // Here you might call a C++ function: _InitApp();
        // Or if your main() is compiled to run automatically, that might handle it
     };
+
+    // TODO: dumped from somewhere  
+    let wasmMemory = new Uint8Array(Module.HEAPU8.buffer, pixelBufferPtr, width * height * 4);
+    gl.texSubImage2D(..., wasmMemory);
+
 </script>
 </body>
 </html>

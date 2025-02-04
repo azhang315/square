@@ -1,15 +1,25 @@
 // renderer.hpp
 #pragma once
+#include <GLES3/gl3.h> // Emscripten WebGL API
 
-class Render {
-public:
-    Render() = default;
-    ~Render() = default;
+// template <typename Derived>
+// class RenderMixIn {
+// public:
+//     void call_draw(const Derived* d) {
+//         static_assert(std::is_base_of_v<RenderMixIn<Derived>, Derived>, "RenderMixIn<T> must be base of T")
+//         static_cast<Derived*>(this)->draw();
+//     }
+// };
 
-    bool init(); // WebGPU
-    void clear(); // r g b a
-
+class Render
+{
 private:
-    // WebGPU contexts + handlers
-    // Dirty
+    GLuint textureID;
+    int width, height;
+public:
+    Render::Render(int w, int h);
+    Render::~Render();
+    void Render::init();
+    void draw(Canvas &canvas);
+
 };

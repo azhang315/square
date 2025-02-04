@@ -13,7 +13,9 @@ enum struct EventType {
     // Network Events
     // NetworkPacketRecv,
     NetworkUpdateErr, // Rollback / sync error
-    ServerStateUpdate, // Authoritative Update
+    NetworkServerStateUpdate, // authoritative Update
+    NetworkServerStateConflict, // authoritative Update
+    // ServerStateUpdate, // Authoritative Update
 
 
     // Input Events
@@ -21,7 +23,7 @@ enum struct EventType {
     MouseUp,
 
     // Rendering
-    CanvasUpdated, // Pixel update applied
+    CanvasUpdate, // Pixel update applied
     // FrameRendered,
     // RedrawRequest,
 

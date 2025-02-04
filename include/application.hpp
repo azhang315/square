@@ -12,12 +12,8 @@ public:
     Application();
     ~Application();
 
-    static void one_iter(); // main
-
-    static void handle_input_event(const InputEvent& event); // event callback
-
+    void one_iter(); // main
     // Events processing
-    // static void process_event_mouse_down(const InputEvent& event);
     // ...
 private:
     void init();
