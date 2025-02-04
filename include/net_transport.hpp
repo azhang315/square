@@ -19,7 +19,16 @@ public:
     // or queue to input / event handler, let event handler manage
     // m_event.queue(net_event)
 
-    // Listener Interface
-private:
-    // std::vector<NetListener*> m_listeners;
+
+    // Listener Interface: evoked by external notifier
+    void handle_event(const EventType& event_type, void* e_data);
+    // Switch statement
+
+    // Forward declare? From base class
+    void notify_listeners(const EventType& event_type, void* e_data);
+
+    // Notifier Interface: publish to listeners
+    void on_event(/*network recv*/) {
+        notify_listeners(EventType{}, 0);
+    }
 };

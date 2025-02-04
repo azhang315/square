@@ -4,15 +4,8 @@
 #include <queue>
 #include <functional>
 #include <emscripten/em_types.h>
+#include "types.hpp"
 
-enum struct InputCode {
-    MouseDown,
-    MouseUp,
-};
-struct InputEvent {
-    InputCode code;
-    int x, y;
-};
 class Input {
 public:
     using EventCallback = std::function<void(const InputEvent&)>;
