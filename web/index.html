@@ -1,20 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>WASM C++ Example</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGPU WASM Collaborative Canvas</title>
+    <style>
+        body { text-align: center; }
+        canvas { border: 1px solid black; }
+    </style>
 </head>
 <body>
-  <h1>WASM C++ Example</h1>
-  <p id="output"></p>
-  <script>
-    // Wait for the WASM module to be ready
-    Module.onRuntimeInitialized = () => {
-      // Call the exported function "add"
-      const result = Module.ccall('add', 'number', ['number', 'number'], [5, 7]);
-      document.getElementById('output').textContent = `5 + 7 = ${result}`;
-    };
-  </script>
-  <script src="main.js"></script>
+    <h1>WebGPU WASM Collaborative Canvas</h1>
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <script src="script.js"></script>
 </body>
 </html>

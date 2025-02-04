@@ -3,20 +3,20 @@
 #include <vector>
 #include <cstdint>
 
-typedef uint16_t pixel_t;
-typedef uint32_t color_t;
-constexpr color_t c_white = 0xFFFFFFFF;
+constexpr uint32_t c_white = 0xFFFFFFFF;
 class Canvas
 {
-    std::vector<color_t> canvas;
+private:
+    std::vector<uint32_t> pixel_buffer;
 public:
-    static constexpr pixel_t HEIGHT = 1000;
-    static constexpr pixel_t WIDTH = 1000;
+    static constexpr uint16_t HEIGHT = 1000;
+    static constexpr uint16_t WIDTH = 1000;
     Canvas();
-    void set_pixel(const pixel_t x, const pixel_t y, const color_t c);
-    color_t get_pixel(pixel_t x, pixel_t y) const;
+    void clear_canvas();
+    void set_pixel(const uint16_t x, const uint16_t y, const uint32_t c);
+    uint32_t get_pixel(uint16_t x, uint16_t y) const;
+    const uint32_t* get_pixel_buffer() const;
 
-
-    void set_stroke(); // h/w acceleration: call renderer functions
+    void set_stroke(); // h/w accelerate
     
 };
