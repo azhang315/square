@@ -11,6 +11,9 @@ public:
 template <typename Derived> // Listener
 class EventListenerMixIn : public IEventListener {
 public:
+    static_assert(std::is_base_of_v<EventListenerMixIn<Derived>, Derived>,
+                  "Derived must inherit from EventListenerMixIn<Derived>");
+
     void call_handle_event(const EventType& e_type, void* e_data) override {
         static_cast<Derived*>(this)->handle_event(e_type, e_data);
     }
