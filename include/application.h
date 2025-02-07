@@ -1,23 +1,24 @@
-// application.hpp
+// application.h
 #pragma once
 #include <memory>
-#include <include/render.hpp>
-#include <include/input.hpp>
-#include <include/net_transport.hpp>
-#include <include/replication.hpp>
-#include <include/canvas.hpp>
+
+#include <render.h>
+#include <input.h>
+#include <net_transport.h>
+#include <canvas.h>
 
 class Application {
 public:
     Application();
     ~Application();
 
-    void one_iter(); // main
+    void run();
 private:
     void init();
+    static void em_process_frame(void* arg);
+
     std::unique_ptr<Render> m_render;
     std::unique_ptr<Input> m_input;
     std::unique_ptr<NetTransport> m_net_transport;
-    std::unique_ptr<Replication> m_replication;
     std::unique_ptr<Canvas> m_canvas;
 };

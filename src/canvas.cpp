@@ -1,13 +1,14 @@
 // canvas.cpp
-// #include "canvas.hpp"
 #include <canvas.h>
 #include <emscripten.h>
-// #include <types.hpp>
 #include <event.h>
 #include <emscripten/em_asm.h>
 
 Canvas::Canvas() : pixel_buffer(HEIGHT * WIDTH, c_white),
-                   render(WIDTH, HEIGHT) {}
+                   render(WIDTH, HEIGHT),
+                   pixel_history_map({}),
+                   dirty_pixels({})
+                    {}
 
 // void Canvas::handle_event(const Event &e)
 template <typename T>
@@ -38,39 +39,37 @@ void Canvas::handle_event(const Event<T> &e)
     //         Canvas::apply_optimistic_local_update(data); }, e.e_data);
 
 }
-inline void Canvas::apply_optimistic_local_update(const EventMouseDown &d)
+inline void Canvas::apply_optimistic_local_update(const MouseDownEvent &e)
 {
-    // batch_update();
-    // set_pixel()
-
-    // pixel history, add update
-    auto& pixel = pixel_history_map[{x, y}];
-    pixel.add_update(seq_num, color);
-    
-    dirty_pixels.insert({x, y});  // Mark pixel as changed (but don't send to GPU yet)
-
-    Event e(EventType::ClientStateUpdate, EventClientStateUpdate{d.x, d.y, local_seq_num});
-    notify_listeners(e); // evokes SYNCHRONOUSLY, network thread. Also, if becomes async, need to keep ptrs/ref alive
-}
-inline void Canvas::apply_server_state_conflict_rollback(const EventServerStateConflict &d) {}
-inline void Canvas::apply_server_state_update(const EventServerStateUpdate &d) {
-void apply_server_update(uint64_t server_seq, uint32_t server_color, int x, int y) {
-    auto& pixel = pixel_history_map[{x, y}];
-    
-    pixel.ack_update(server_seq, server_color); // Shift window
-    
-    // If we have newer local updates, reapply them
-    if (!pixel.seq_buffer.empty()) {
-        uint32_t latest_color = pixel.seq_buffer.back().second;
-        apply_color_to_canvas(x, y, latest_color);
-    }
-
     // auto& pixel = pixel_history_map[{x, y}];
-    // pixel.ack_update(server_seq, server_color);
+    // pixel.add_update(color); // embed seqnum
+    
+    dirty_pixels.insert({e.x, e.y});  // Mark pixel as changed (but don't send to GPU yet)
+    render_dirty = true;
 
-    dirty_pixels.insert({x, y});  // Mark as changed (for next GPU commit)
+    CanvasUpdateEvent new_e(e.x, e.y, e.color);
+    notify_listeners(new_e); // evokes SYNCHRONOUSLY, network thread. Also, if becomes async, need to keep ptrs/ref alive
 }
+// inline void Canvas::apply_server_state_conflict_rollback(const ServerStateConflictEvent &e) {}
+inline void Canvas::apply_server_state_update(const ServerStateUpdateEvent &e) {}
+void apply_server_update(uint64_t server_seq, uint32_t server_color, int x, int y) {
+    // auto& pixel = pixel_history_map[{x, y}];
+    
+    // pixel.ack_update(server_seq, server_color); // Shift window
+    
+    // // If we have newer local updates, reapply them
+    // if (!pixel.seq_buffer.empty()) {
+    //     uint32_t latest_color = pixel.seq_buffer.back().second;
+    //     apply_color_to_canvas(x, y, latest_color);
+    // }
+
+    // // auto& pixel = pixel_history_map[{x, y}];
+    // // pixel.ack_update(server_seq, server_color);
+
+    // dirty_pixels.insert({x, y});  // Mark as changed (for next GPU commit)
 }
+
+
 
 inline void Canvas::batch_update() {}
 

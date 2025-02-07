@@ -1,17 +1,21 @@
+// input.cpp
 #include <input.h>
 #include <iostream>
 #include <emscripten/html5.h>
 #include <event.h>
 
-void Input::init() {
+void Input::init()
+{
     // m_current_states[InputCode::MouseDown] = false;
     emscripten_set_mousedown_callback("#canvas", this, true, on_mouse_down);
-    emscripten_set_mouseup_callback("#canvas", this, true, on_mouse_up);
+    // emscripten_set_mouseup_callback("#canvas", this, true, on_mouse_up);
 }
-static EM_BOOL on_mouse_down(int eventType, const EmscriptenMouseEvent* e, void* userData) {
-    Input* input = static_cast<Input*>(userData);
-    if (input) {
-        MouseDownEvent event(e->clientX, e->clientY);
+EM_BOOL on_mouse_down(int eventType, const EmscriptenMouseEvent *e, void *userData)
+{
+    Input *input = static_cast<Input *>(userData);
+    if (input)
+    {
+        MouseDownEvent event(e->clientX, e->clientY, 0);
         input->notify_listeners(event);
     }
     return EM_TRUE;
@@ -58,7 +62,6 @@ static EM_BOOL on_mouse_down(int eventType, const EmscriptenMouseEvent* e, void*
 //     return false;
 // }
 
-
 // // Batched Events
 // void Input::process_event(const InputEvent& e) {
 //     switch (event.code) {
@@ -76,10 +79,9 @@ static EM_BOOL on_mouse_down(int eventType, const EmscriptenMouseEvent* e, void*
 //     }
 // }
 
-
 // static inline void process_event_mouse_down(InputEvent event) {
 //     // m_current_states[InputCode::MouseDown] = true;
-    
+
 //     canvas_manager->draw_pixel(x, y, color);
 //     net_transport->send_mouse_event(x, y, color);
 // }

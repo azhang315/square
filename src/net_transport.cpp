@@ -1,4 +1,5 @@
-#include <net_transport.hpp>
+// net_transport.cpp
+#include <net_transport.h>
 
 // void NetTransport::handle_event() {
 //     if networkSync // canvas

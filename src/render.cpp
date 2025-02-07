@@ -1,6 +1,7 @@
-#include <render.hpp>
+// render.cpp
+#include <render.h>
 #include <GLES3/gl3.h> // Emscripten WebGL API
-#include <canvas.hpp>
+#include <canvas.h>
 
 Render::Render(int w, int h) : width(w), height(h), textureID(0) {}
 
@@ -35,11 +36,11 @@ void Render::draw(Canvas& canvas) {
 }
 
 void commit_to_gpu(Canvas& canvas) {
-    if (canvas.dirty_pixels.empty()) return; // No updates? Skip GPU work.
+    // if (canvas.dirty_pixels.empty()) return; // No updates? Skip GPU work.
 
-    for (const auto& [x, y] : dirty_pixels) {
-        apply_color_to_canvas(x, y, pixel_history_map[{x, y}].seq_buffer.back().second);
-    }
+    // for (const auto& [x, y] : dirty_pixels) {
+    //     apply_color_to_canvas(x, y, pixel_history_map[{x, y}].seq_buffer.back().second);
+    // }
     
-    dirty_pixels.clear(); // All updates sent to GPU.
+    // dirty_pixels.clear(); // All updates sent to GPU.
 }

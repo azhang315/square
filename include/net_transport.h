@@ -1,7 +1,7 @@
-// net_transport.hpp
+// net_transport.h
 #pragma once
 #include <cstddef>
-#include "event_notification.hpp"
+#include <event_dispatch.h>
 
 class NetTransport : public EventListenerMixIn<NetTransport>,
                      public EventNotifierMixIn<NetTransport>
@@ -24,10 +24,12 @@ public:
     void on_server_update(); // get pixel, rollback if incorrect on local
 
     /* Listener Interface (Triggered by External Notifier) */
-    void handle_event(const Event& e);
+    template <typename T>
+    void handle_event(const Event<T>& e);
 
 // Mix-in inherited
 protected: 
     /* Notifier Interface (Publishes to Listeners) */
-    void notify_listeners(const Event& e); 
+    template <typename T>
+    void notify_listeners(const Event<T>& e); 
 };

@@ -1,12 +1,11 @@
-// canvas.hpp
+// canvas.h
 #pragma once
 #include <vector>
 #include <cstdint>
-// #include <render.hpp>
-#include <render.h>
 #include <unordered_map>
 #include <unordered_set>
-// #include <event_notification.hpp>
+
+#include <render.h>
 #include <event_dispatch.h>
 
 constexpr uint32_t c_white = 0xFFFFFFFF;

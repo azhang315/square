@@ -1,6 +1,7 @@
-// renderer.hpp
+// renderer.h
 #pragma once
 #include <GLES3/gl3.h> // Emscripten WebGL API
+#include <canvas.h>
 
 // template <typename Derived>
 // class RenderMixIn {
@@ -17,9 +18,9 @@ private:
     GLuint textureID;
     int width, height;
 public:
-    Render::Render(int w, int h);
-    Render::~Render();
-    void Render::init();
+    Render(int w, int h);
+    ~Render();
+    void init();
     void draw(Canvas &canvas);
 
 };

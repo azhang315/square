@@ -1,28 +1,7 @@
+// event.h
 #pragma once
 #include <variant>
 #include <cstdint>
-
-// struct EventServerStateUpdate
-// {
-// };
-// struct EventServerStateConflict
-// {
-// };
-// struct EventCanvasUpdate
-// {
-// };
-// struct EventClientStateUpdate
-// {
-//     int32_t x;
-//     int32_t y;
-//     uint64_t seq;
-// };
-// struct EventMouseDown
-// {
-//     int32_t x;
-//     int32_t y;
-// };
-
 
 
 template<typename Derived>
@@ -49,7 +28,8 @@ struct MouseDownEvent : public Event<MouseDownEvent> {
     // static constexpr const char* Name = "MouseDownEvent";
     int x;
     int y;
-    MouseDownEvent(int x, int y) : x(x), y(y) {};
+    uint32_t color;
+    MouseDownEvent(int x, int y, uint32_t color) : x(x), y(y), color(color) {};
 };
 struct CanvasUpdateEvent : public Event<CanvasUpdateEvent> {
     static constexpr const char* Name = "CanvasUpdateEvent";
