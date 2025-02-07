@@ -2,10 +2,12 @@
 #pragma once
 #include <vector>
 #include <cstdint>
-#include <render.hpp>
+// #include <render.hpp>
+#include <render.h>
 #include <unordered_map>
 #include <unordered_set>
-#include <event_notification.hpp>
+// #include <event_notification.hpp>
+#include <event_dispatch.h>
 
 constexpr uint32_t c_white = 0xFFFFFFFF;
 struct PixelUpdate
@@ -46,9 +48,13 @@ private:
 
     Render render;
 
-    inline void apply_optimistic_local_update(const EventMouseDown &d);
-    inline void apply_server_state_conflict_rollback(const EventServerStateConflict &d);
-    inline void apply_server_state_update(const EventServerStateUpdate &d);
+    // inline void apply_optimistic_local_update(const EventMouseDown &d);
+    // inline void apply_server_state_conflict_rollback(const EventServerStateConflict &d);
+    // inline void apply_server_state_update(const EventServerStateUpdate &d);
+
+    inline void apply_optimistic_local_update(const MouseDownEvent &d);
+    // inline void apply_server_state_conflict_rollback(const ServerStateConflictEvent &d);
+    inline void apply_server_state_update(const ServerStateUpdateEvent &d);
 
 public:
     static constexpr uint16_t HEIGHT = 1000;
@@ -61,7 +67,8 @@ public:
     void clear_canvas();
 
     // void handle_event(const EventType &event_type, void *e_data);
-    void handle_event(const Event &event);
+    template <typename T>
+    void handle_event(const Event<T> &e);
 
     // Rendering
     void draw()
@@ -81,5 +88,6 @@ public:
     // Mix-in inherited
 protected:
     /* Notifier Interface (Publishes to Listeners) */
-    void notify_listeners(const Event &e);
+    template <typename T>
+    void notify_listeners(const Event<T> &e);
 };

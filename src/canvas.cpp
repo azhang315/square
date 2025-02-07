@@ -1,24 +1,42 @@
 // canvas.cpp
-#include "canvas.hpp"
+// #include "canvas.hpp"
+#include <canvas.h>
 #include <emscripten.h>
-#include <types.hpp>
+// #include <types.hpp>
+#include <event.h>
 #include <emscripten/em_asm.h>
 
 Canvas::Canvas() : pixel_buffer(HEIGHT * WIDTH, c_white),
                    render(WIDTH, HEIGHT) {}
 
-void Canvas::handle_event(const Event &e)
+// void Canvas::handle_event(const Event &e)
+template <typename T>
+void Canvas::handle_event(const Event<T> &e)
 {
-    std::visit([&](auto &&data)
-               {
-        using T = std::decay_t<decltype(data)>;
+    if constexpr (std::is_same_v<T, ServerStateUpdateEvent>) {
+        apply_server_state_update(e);
+    }
+    else if constexpr (std::is_same_v<T, ServerStateUpdateEvent>) {
+        apply_server_state_conflict_rollback(e);
+    } 
+    else if constexpr (std::is_same_v<T, MouseDownEvent>) {
+        apply_optimistic_local_update(e);
+    } 
+    else {
+        static_assert(always_false<T>, "Unhandled event type!");
+    }
 
-        if constexpr (std::is_same_v<T, EventServerStateUpdate>)
-            Canvas::apply_server_state_update(data);
-        else if constexpr (std::is_same_v<T, EventServerStateConflict>)
-            Canvas::apply_server_state_conflict_rollback(data);
-        else if constexpr (std::is_same_v<T, EventMouseDown>)
-            Canvas::apply_optimistic_local_update(data); }, e.e_data);
+    // std::visit([&](auto &&data)
+    //            {
+    //     using T = std::decay_t<decltype(data)>;
+
+    //     if constexpr (std::is_same_v<T, EventServerStateUpdate>)
+    //         Canvas::apply_server_state_update(data);
+    //     else if constexpr (std::is_same_v<T, EventServerStateConflict>)
+    //         Canvas::apply_server_state_conflict_rollback(data);
+    //     else if constexpr (std::is_same_v<T, EventMouseDown>)
+    //         Canvas::apply_optimistic_local_update(data); }, e.e_data);
+
 }
 inline void Canvas::apply_optimistic_local_update(const EventMouseDown &d)
 {

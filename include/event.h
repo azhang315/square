@@ -1,26 +1,27 @@
 #pragma once
 #include <variant>
+#include <cstdint>
 
-struct EventServerStateUpdate
-{
-};
-struct EventServerStateConflict
-{
-};
-struct EventCanvasUpdate
-{
-};
-struct EventClientStateUpdate
-{
-    int32_t x;
-    int32_t y;
-    uint64_t seq;
-};
-struct EventMouseDown
-{
-    int32_t x;
-    int32_t y;
-};
+// struct EventServerStateUpdate
+// {
+// };
+// struct EventServerStateConflict
+// {
+// };
+// struct EventCanvasUpdate
+// {
+// };
+// struct EventClientStateUpdate
+// {
+//     int32_t x;
+//     int32_t y;
+//     uint64_t seq;
+// };
+// struct EventMouseDown
+// {
+//     int32_t x;
+//     int32_t y;
+// };
 
 
 
@@ -29,26 +30,26 @@ class Event
 {
 private:
     // EventData m_data; // offload to derived
+    
 public:
     static const char* StaticName() { return Derived::Name; };
-    Event() = delete;
-    Event(Derived type) : m_type(type) {}
+    // Event(Derived type) : m_type(type) {}
     ~Event() = default;
 
-    inline const Derived GetType() const { return m_Type; }
+    // inline const Derived GetType() const { return m_Type; }
 
-    template<typename EventType>
-    inline EventType ToType() const
-    {
-        return static_cast<const EventType&>(*this);
-    }
+    // template<typename EventType>
+    // inline EventType ToType() const
+    // {
+    //     return static_cast<const EventType&>(*this);
+    // }
 };
 
 struct MouseDownEvent : public Event<MouseDownEvent> {
     // static constexpr const char* Name = "MouseDownEvent";
     int x;
     int y;
-    MouseDownEvent(int x, int y) : x(x), y(y),  {};
+    MouseDownEvent(int x, int y) : x(x), y(y) {};
 };
 struct CanvasUpdateEvent : public Event<CanvasUpdateEvent> {
     static constexpr const char* Name = "CanvasUpdateEvent";
@@ -67,6 +68,7 @@ struct ServerStateUpdateEvent : public Event<ServerStateUpdateEvent> {
 };
 
 
+/*
 
 using EventData = std::variant<
     std::monostate,
@@ -108,4 +110,4 @@ enum struct EventType
     // ShutdownRequested,       // Application received shutdown signal
     // FatalError               // Unrecoverable application error
 
-};
+};*/
