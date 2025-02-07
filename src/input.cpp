@@ -9,17 +9,21 @@ void Input::init() {
     emscripten_set_mouseup_callback("#canvas", this, true, on_mouse_up);
 }
 static EM_BOOL on_mouse_down(int eventType, const EmscriptenMouseEvent* e, void* userData) {
-    // process_event_mouse_down(InputEvent{InputCode::MouseDown, e->clientX, e->clientY});
-    EventNotifierMixIn::notify_listeners(EventType::MouseDown, e_data); // e.g., call Listeners (canvas, net) functions
-
+    Input* input = static_cast<Input*>(userData);
+    if (input) {
+        Event event(EventType::MouseDown, EventMouseDown{e->clientX, e->clientY});
+        input->notify_listeners(event);
+    }
     return EM_TRUE;
 }
-static EM_BOOL on_mouse_up(int eventType, const EmscriptenMouseEvent* e, void* userData) {
-    // process_event_mouse_up(InputEvent{InputCode::MouseUp, e->clientX, e->clientY});
-    // TODO: make into nice event struct
-    EventNotifierMixIn::notify_listeners(EventType::MouseUp, e_data); // e.g., call Listeners (canvas, net) functions
-    return EM_TRUE
-}
+// static EM_BOOL on_mouse_up(int eventType, const EmscriptenMouseEvent* e, void* userData) {
+//     Input* input = static_cast<Input*>(userData);
+//     if (input) {
+//         Event event(EventType::MouseUp, EventMouseUp{e->clientX, e->clientY});
+//         input->notify_listeners(event);
+//     }
+//     return EM_TRUE;
+// }
 
 // Process queued input events
 void Input::update() {

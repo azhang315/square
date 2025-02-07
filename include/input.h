@@ -25,6 +25,9 @@ public:
     static EM_BOOL on_mouse_down(int eventType, const EmscriptenMouseEvent *e, void *userData);
     static EM_BOOL on_mouse_up(int eventType, const EmscriptenMouseEvent *e, void *userData);
 
+
+    void handle_event(const EventType& e_type, );
+
 private:
     inline void queue_one_event(InputEvent event);
     void process_event(const InputEvent &event);

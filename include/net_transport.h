@@ -24,10 +24,10 @@ public:
     void on_server_update(); // get pixel, rollback if incorrect on local
 
     /* Listener Interface (Triggered by External Notifier) */
-    void handle_event(const EventType& event_type, void* e_data);
+    void handle_event(const Event& e);
 
 // Mix-in inherited
 protected: 
     /* Notifier Interface (Publishes to Listeners) */
-    void notify_listeners(const EventType& event_type, void* e_data); 
+    void notify_listeners(const Event& e); 
 };

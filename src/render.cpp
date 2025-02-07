@@ -33,3 +33,13 @@ void Render::draw(Canvas& canvas) {
 
     canvas.clear_dirty();  // Mark canvas as clean
 }
+
+void commit_to_gpu(Canvas& canvas) {
+    if (canvas.dirty_pixels.empty()) return; // No updates? Skip GPU work.
+
+    for (const auto& [x, y] : dirty_pixels) {
+        apply_color_to_canvas(x, y, pixel_history_map[{x, y}].seq_buffer.back().second);
+    }
+    
+    dirty_pixels.clear(); // All updates sent to GPU.
+}

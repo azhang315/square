@@ -1,7 +1,7 @@
 // main.cpp
 #include <iostream>
 #include <emscripten.h>
-#include "include/application.hpp"
+#include <application.hpp>
 
 #ifndef FPS
     #define FPS 60

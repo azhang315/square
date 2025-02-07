@@ -13,8 +13,6 @@ public:
     ~Application();
 
     void one_iter(); // main
-    // Events processing
-    // ...
 private:
     void init();
     std::unique_ptr<Render> m_render;
