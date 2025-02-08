@@ -4,27 +4,32 @@
 #include <event.h>
 #include <emscripten/em_asm.h>
 
-Canvas::Canvas() : pixel_buffer(HEIGHT * WIDTH, c_white),
-                   render(WIDTH, HEIGHT),
-                   pixel_history_map({}),
-                   dirty_pixels({})
-                    {}
+Canvas::Canvas() : EventListenerMixIn<Canvas>(), EventNotifierMixIn<Canvas>(),
+                   pixel_buffer(HEIGHT * WIDTH, c_white)
+{
+}
+//    pixel_history_map({}),
+//    dirty_pixels({})
 
 // void Canvas::handle_event(const Event &e)
 template <typename T>
 void Canvas::handle_event(const Event<T> &e)
 {
-    if constexpr (std::is_same_v<T, ServerStateUpdateEvent>) {
+    if constexpr (std::is_same_v<T, ServerStateUpdateEvent>)
+    {
         apply_server_state_update(e);
     }
-    else if constexpr (std::is_same_v<T, ServerStateUpdateEvent>) {
+    else if constexpr (std::is_same_v<T, ServerStateUpdateEvent>)
+    {
         apply_server_state_conflict_rollback(e);
-    } 
-    else if constexpr (std::is_same_v<T, MouseDownEvent>) {
+    }
+    else if constexpr (std::is_same_v<T, MouseDownEvent>)
+    {
         apply_optimistic_local_update(e);
-    } 
-    else {
-        static_assert(always_false<T>, "Unhandled event type!");
+    }
+    else
+    {
+        static_assert(false, "Unhandled event type!");
     }
 
     // std::visit([&](auto &&data)
@@ -37,14 +42,13 @@ void Canvas::handle_event(const Event<T> &e)
     //         Canvas::apply_server_state_conflict_rollback(data);
     //     else if constexpr (std::is_same_v<T, EventMouseDown>)
     //         Canvas::apply_optimistic_local_update(data); }, e.e_data);
-
 }
 inline void Canvas::apply_optimistic_local_update(const MouseDownEvent &e)
 {
     // auto& pixel = pixel_history_map[{x, y}];
     // pixel.add_update(color); // embed seqnum
-    
-    dirty_pixels.insert({e.x, e.y});  // Mark pixel as changed (but don't send to GPU yet)
+
+    // dirty_pixels.insert({e.x, e.y});  // Mark pixel as changed (but don't send to GPU yet)
     render_dirty = true;
 
     CanvasUpdateEvent new_e(e.x, e.y, e.color);
@@ -52,11 +56,12 @@ inline void Canvas::apply_optimistic_local_update(const MouseDownEvent &e)
 }
 // inline void Canvas::apply_server_state_conflict_rollback(const ServerStateConflictEvent &e) {}
 inline void Canvas::apply_server_state_update(const ServerStateUpdateEvent &e) {}
-void apply_server_update(uint64_t server_seq, uint32_t server_color, int x, int y) {
+void apply_server_update(uint64_t server_seq, uint32_t server_color, int x, int y)
+{
     // auto& pixel = pixel_history_map[{x, y}];
-    
+
     // pixel.ack_update(server_seq, server_color); // Shift window
-    
+
     // // If we have newer local updates, reapply them
     // if (!pixel.seq_buffer.empty()) {
     //     uint32_t latest_color = pixel.seq_buffer.back().second;
@@ -68,8 +73,6 @@ void apply_server_update(uint64_t server_seq, uint32_t server_color, int x, int 
 
     // dirty_pixels.insert({x, y});  // Mark as changed (for next GPU commit)
 }
-
-
 
 inline void Canvas::batch_update() {}
 
@@ -102,11 +105,11 @@ extern "C"
         return (x < WIDTH && y < HEIGHT) ? pixel_buffer[x + y * WIDTH] : c_white;
     }
 
-    EMSCRIPTEN_KEEPALIVE
-    const uint32_t *Canvas::get_pixel_buffer() const
-    {
-        return pixel_buffer.data();
-    }
+    // EMSCRIPTEN_KEEPALIVE
+    // const uint32_t *Canvas::get_pixel_buffer() const
+    // {
+    //     return pixel_buffer.data();
+    // }
 
     // // Dummy network update simulation
     // void EMSCRIPTEN_KEEPALIVE processNetworkEvents() {

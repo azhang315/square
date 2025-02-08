@@ -1,26 +1,19 @@
 // renderer.h
 #pragma once
-#include <GLES3/gl3.h> // Emscripten WebGL API
-#include <canvas.h>
+#include <GLES3/gl3.h>           // Emscripten WebGL API
+#include <event_dispatch.h>      // For EventListenerMixIn, EventNotifierMixIn
 
-// template <typename Derived>
-// class RenderMixIn {
-// public:
-//     void call_draw(const Derived* d) {
-//         static_assert(std::is_base_of_v<RenderMixIn<Derived>, Derived>, "RenderMixIn<T> must be base of T")
-//         static_cast<Derived*>(this)->draw();
-//     }
-// };
-
-class Render
-{
+class Render : public EventListenerMixIn<Render>, public EventNotifierMixIn<Render> {
 private:
     GLuint textureID;
     int width, height;
+
 public:
     Render(int w, int h);
     ~Render();
-    void init();
-    void draw(Canvas &canvas);
 
+    void init();
+    
+    void draw(const void* pixelData, bool isDirty);
+    void commit_to_gpu(const void* pixelBuffer, int w, int h);
 };

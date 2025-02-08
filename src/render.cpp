@@ -1,7 +1,7 @@
-// render.cpp
-#include <render.h>
-#include <GLES3/gl3.h> // Emscripten WebGL API
-#include <canvas.h>
+// renderer.cpp
+#include "render.h"
+#include <iostream>
+#include <GLES3/gl3.h>
 
 Render::Render(int w, int h) : width(w), height(h), textureID(0) {}
 
@@ -22,25 +22,16 @@ void Render::init() {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 }
 
-void Render::draw(Canvas& canvas) {
-    if (!canvas.is_dirty()) return;
+void Render::draw(const void* pixelBuffer, bool isDirty) {
+    if (!isDirty) return;  // Skip if canvas is not dirty
 
-    canvas.apply_batch_update();  // Update pixel buffer
-
-    glBindTexture(GL_TEXTURE_2D, textureID);  // Bind the texture
-
-    // Update texture with new pixel data
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, canvas.get_pixel_buffer());
-
-    canvas.clear_dirty();  // Mark canvas as clean
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixelBuffer);
 }
 
-void commit_to_gpu(Canvas& canvas) {
-    // if (canvas.dirty_pixels.empty()) return; // No updates? Skip GPU work.
+void Render::commit_to_gpu(const void* pixelBuffer, int w, int h) {
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelBuffer);
 
-    // for (const auto& [x, y] : dirty_pixels) {
-    //     apply_color_to_canvas(x, y, pixel_history_map[{x, y}].seq_buffer.back().second);
-    // }
-    
-    // dirty_pixels.clear(); // All updates sent to GPU.
+    std::cout << "Committed " << w << "x" << h << " pixels to GPU." << std::endl;
 }

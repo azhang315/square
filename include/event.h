@@ -1,6 +1,5 @@
 // event.h
 #pragma once
-#include <variant>
 #include <cstdint>
 
 
@@ -25,7 +24,7 @@ public:
 };
 
 struct MouseDownEvent : public Event<MouseDownEvent> {
-    // static constexpr const char* Name = "MouseDownEvent";
+    static constexpr const char* Name = "MouseDownEvent";
     int x;
     int y;
     uint32_t color;

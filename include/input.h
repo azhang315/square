@@ -4,6 +4,7 @@
 #include <queue>
 #include <functional>
 #include <emscripten/em_types.h>
+#include <emscripten/html5.h>
 // #include "include/types.hpp"
 // #include "include/event_notification.hpp"
 #include <event.h>
@@ -23,6 +24,7 @@ public:
     // bool is_mouse_down_current_frame() const { return m_mouse_down_current_frame; }
 
     // bool poll_one_event(InputEvent &out);
+    
 
     static EM_BOOL on_mouse_down(int eventType, const EmscriptenMouseEvent *e, void *userData);
     static EM_BOOL on_mouse_up(int eventType, const EmscriptenMouseEvent *e, void *userData);
