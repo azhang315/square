@@ -2,6 +2,8 @@
 #pragma once
 #include <GLES3/gl3.h>           // Emscripten WebGL API
 #include <event_dispatch.h>      // For EventListenerMixIn, EventNotifierMixIn
+#include <spdlog/spdlog.h>
+
 
 class Render : public EventNotifierMixIn<Render> {
 private:
@@ -18,5 +20,7 @@ public:
     void commit_to_gpu(const void* pixelBuffer, int w, int h);
 
 
-    void handle_event(const Event<CanvasUpdateEvent> &e) {};
+    void handle_event(const Event<CanvasUpdateEvent> &e) {
+        spdlog::info("Render::Event<CanvasUpdateEvent>()");
+    };
 };

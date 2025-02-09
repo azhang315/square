@@ -39,7 +39,10 @@ public:
 
     void handle_event(const Event<ServerStateUpdateEvent> &e) {};
     void handle_event(const Event<MouseDownEvent> &e) {
-        notify_listeners(e);
+        spdlog::info("Canvas::Event<MouseDownEvent>()");
+
+        Event<CanvasUpdateEvent> new_e;
+        notify_listeners(new_e);
     }
 
     bool is_dirty() const { return render_dirty; };

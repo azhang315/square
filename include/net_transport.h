@@ -2,6 +2,8 @@
 #pragma once
 #include <cstddef>
 #include <event_dispatch.h>
+// #include <log.h>
+#include <spdlog/spdlog.h>
 
 class NetTransport :                      public EventNotifierMixIn<NetTransport>
 {
@@ -20,7 +22,9 @@ public:
 
     /* Events  */
     void on_server_update(); // get pixel, rollback if incorrect on local
-    void handle_event(const Event<CanvasUpdateEvent> &e) {};
+    void handle_event(const Event<CanvasUpdateEvent> &e) {
+        spdlog::info("NT::Event<CanvasUpdateEvent>()");
+    };
 
 // Mix-in inherited
 protected: 

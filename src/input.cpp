@@ -3,15 +3,19 @@
 #include <iostream>
 #include <emscripten/html5.h>
 #include <event.h>
+#include <spdlog/spdlog.h>
 
-void Input::init()
-{
-    // m_current_states[InputCode::MouseDown] = false;
+
+
+Input::Input() {
+    spdlog::info("Input::init()");
     emscripten_set_mousedown_callback("#canvas", this, true, on_mouse_down);
-    // emscripten_set_mouseup_callback("#canvas", this, true, on_mouse_up);
 }
-EM_BOOL on_mouse_down(int eventType, const EmscriptenMouseEvent *e, void *userData)
+
+EM_BOOL Input::on_mouse_down(int eventType, const EmscriptenMouseEvent *e, void *userData)
 {
+    spdlog::info("Event: on_mouse_down");
+    
     Input *input = static_cast<Input *>(userData);
     if (input)
     {
@@ -19,10 +23,13 @@ EM_BOOL on_mouse_down(int eventType, const EmscriptenMouseEvent *e, void *userDa
         // input->notify_listeners(event);
         // TODO: notify_listeners();
         // TODO("hello");
-        
+
+        input->notify_listeners(event);
+
     }
     return EM_TRUE;
 }
+
 // static EM_BOOL on_mouse_up(int eventType, const EmscriptenMouseEvent* e, void* userData) {
 //     Input* input = static_cast<Input*>(userData);
 //     if (input) {

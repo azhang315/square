@@ -12,20 +12,30 @@
 #include <net_transport.h>
 #include <render.h>
 
+#include <log.h>
+
 Application::Application()
 {
+  spdlog::info("Application::Application()");
+  spdlog::info("Skip: Logger initialization");
     init();
 }
 
 void Application::init()
 {
+  spdlog::info("Application::init()");
+
     m_input = std::make_unique<Input>();
     m_net_transport = std::make_unique<NetTransport>();
     m_canvas = std::make_unique<Canvas>();
     m_render = std::make_unique<Render>(Canvas::HEIGHT, Canvas::WIDTH);
 
+    spdlog::info("Application::init() -> unique pointers made");
+
+
+
     /* Input Events */
-    // Input -> Canvas
+    // Input -> Canvas // only one that works
     add_listener<MouseDownEvent>(m_input.get(), m_canvas.get());
 
     // Canvas -> Network
@@ -37,10 +47,13 @@ void Application::init()
     // Network -> Canvas
     add_listener<ServerStateUpdateEvent>(m_net_transport.get(), m_canvas.get());
 
+
 }
 
 void Application::run()
 {
+  spdlog::info("Application::run()");
+
 #ifndef FPS
 #define FPS 60
 #endif
@@ -50,6 +63,8 @@ void Application::run()
 
 void Application::em_process_frame(void *arg)
 {
+    // spdlog::info("Application::em_process_frame()");
+
     Application *app = static_cast<Application *>(arg);
 
     // 1. Queued Event Processing

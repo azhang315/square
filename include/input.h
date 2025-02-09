@@ -13,14 +13,13 @@
 class Input : public EventNotifierMixIn<Input>
 {
 public:
-    Input() = default;
+    Input();
     ~Input() = default;
 
-    void init();   // register with emscripten
     void update() {} // process queued input events
 
     static EM_BOOL on_mouse_down(int eventType, const EmscriptenMouseEvent *e, void *userData);
-    static EM_BOOL on_mouse_up(int eventType, const EmscriptenMouseEvent *e, void *userData);
+    // static EM_BOOL on_mouse_up(int eventType, const EmscriptenMouseEvent *e, void *userData);
 
 private:
     // inline void queue_one_event(InputEvent event);

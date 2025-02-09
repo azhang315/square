@@ -35,3 +35,5 @@
 *.vscode
 local
 build
+web/build
+logs
