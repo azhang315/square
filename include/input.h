@@ -19,9 +19,11 @@ public:
     void update() {} // process queued input events
 
     static EM_BOOL on_mouse_down(int eventType, const EmscriptenMouseEvent *e, void *userData);
-    // static EM_BOOL on_mouse_up(int eventType, const EmscriptenMouseEvent *e, void *userData);
+    static EM_BOOL on_mouse_up(int eventType, const EmscriptenMouseEvent *e, void *userData);
+    static EM_BOOL on_mouse_move(int eventType, const EmscriptenMouseEvent *e, void *userData);
 
 private:
+    bool m_mouse_down;
     // inline void queue_one_event(InputEvent event);
     // void process_event(const InputEvent &event);
     // inline void process_event_mouse_down(InputEvent event);
@@ -30,5 +32,4 @@ private:
     // std::unordered_map<InputCode, bool> m_current_states;
     // std::queue<InputEvent> m_event_queue;
 
-    // bool m_mouse_down_current_frame = false;
 };

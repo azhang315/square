@@ -12,74 +12,62 @@
 Input::Input() {
     spdlog::info("Input::init()");
     emscripten_set_mousedown_callback("#canvas", this, true, on_mouse_down);
+    emscripten_set_mouseup_callback("#canvas", this, true, on_mouse_up);
+    emscripten_set_mousemove_callback("#canvas", this, true, on_mouse_move);
 }
 
-// EM_BOOL Input::on_mouse_down(int eventType, const EmscriptenMouseEvent *e, void *userData)
-// {
-//     spdlog::info("Event: on_mouse_down");
-    
-//     Input *input = static_cast<Input *>(userData);
-//     if (input)
-//     {
-//         spdlog::info("clientX: {}, clientY: {}", e->clientX, e->clientY);
-//         spdlog::info("canvasX: {}, canvasY: {}", e->canvasX, e->canvasY);
-//         spdlog::info("targetX: {}, targetY: {}", e->targetX, e->targetY);
-//         spdlog::info("screenX: {}, screenY: {}", e->screenX, e->screenY);
-
-//         double dpr = emscripten_get_device_pixel_ratio(); // good
-//         double cssWidth, cssHeight;
-//         emscripten_get_element_css_size("#canvas", &cssWidth, &cssHeight);
-
-//         int canvasWidth, canvasHeight;
-//         emscripten_get_canvas_element_size("#canvas", &canvasWidth, &canvasHeight);
-        
-
-//         // Convert client coordinates to canvas coordinates
-//         double canvasX = (e->clientX - rect.x) * (Canvas::WIDTH / rect.width);
-//         double canvasY = (e->clientY - rect.y) * (Canvas::HEIGHT / rect.height);
-
-//         // Flip Y-axis for WebGL
-//         int flippedY = Canvas::HEIGHT - static_cast<int>(canvasY) - 1;
-
-//         spdlog::info("Mapped Coordinates: canvasX = {}, canvasY (flipped) = {}", static_cast<int>(canvasX), flippedY);
-
-//         MouseDownEvent event(static_cast<int>(canvasX), flippedY, 0);
-//         input->notify_listeners(event);
-//     }
-//     return EM_TRUE;
-// }
-
+inline const std::pair<double, double>& normalizeCSS(const EmscriptenMouseEvent *e);
 
 EM_BOOL Input::on_mouse_down(int eventType, const EmscriptenMouseEvent *e, void *userData)
 {
     Input *input = static_cast<Input *>(userData);
     if (input)
     {
-        // Step 1: Get the CSS size of the canvas
+        auto [x, y] = normalizeCSS(e);
+        MouseDownEvent event(x, y, 0);
+        input->notify_listeners(event);
+        
+        input->m_mouse_down = true;
+    }
+    return EM_TRUE;
+}
+EM_BOOL Input::on_mouse_up(int eventType, const EmscriptenMouseEvent *e, void *userData) {
+    Input *input = static_cast<Input *>(userData);
+    if (input)
+    {
+        input->m_mouse_down = false;
+    }
+    return EM_TRUE;
+
+}
+EM_BOOL Input::on_mouse_move(int eventType, const EmscriptenMouseEvent *e, void *userData) {
+    Input *input = static_cast<Input *>(userData);
+    if (input && input->m_mouse_down)
+    {
+        auto [x, y] = normalizeCSS(e);
+        MouseDownEvent event(x, y, 0);
+        input->notify_listeners(event);
+    }
+    return EM_TRUE;
+}
+
+
+inline const std::pair<double, double>& normalizeCSS(const EmscriptenMouseEvent *e) {
+    // Normalize CSS to WebGL drawing buffer size
         double cssWidth, cssHeight;
         emscripten_get_element_css_size("#canvas", &cssWidth, &cssHeight);
-
-        // Step 2: Get the WebGL drawing buffer size
         EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_get_current_context();
         int drawingBufferWidth, drawingBufferHeight;
         emscripten_webgl_get_drawing_buffer_size(context, &drawingBufferWidth, &drawingBufferHeight);
 
-        // Step 3: Get the canvas position offset relative to the viewport
-        // EmscriptenBoundingClientRect rect;
-        // emscripten_get_element_bounding_client_rect("#canvas", &rect);
-
-        // Step 4: Normalize mouse coordinates
+        // Calculation
         double normalizedX = ((e->targetX) / cssWidth) * drawingBufferWidth;
         double normalizedY = ((e->targetY) / cssHeight) * drawingBufferHeight;
 
-        // Step 5: Flip Y-axis for WebGL
+        // Flip Y-axis: for WebGL
         int flippedY = drawingBufferHeight - static_cast<int>(normalizedY) - 1;
 
-        // Dispatch the event
-        MouseDownEvent event(static_cast<int>(normalizedX), flippedY, 0);
-        input->notify_listeners(event);
-    }
-    return EM_TRUE;
+        return std::make_pair(normalizedX, flippedY);
 }
 
 
