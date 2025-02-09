@@ -32,18 +32,18 @@ struct MouseDownEvent : public Event<MouseDownEvent> {
 };
 struct CanvasUpdateEvent : public Event<CanvasUpdateEvent> {
     static constexpr const char* Name = "CanvasUpdateEvent";
-    int pixelX, pixelY;
+    int x, y;
     uint32_t color;
     CanvasUpdateEvent(int x, int y, uint32_t color)
-        : pixelX(x), pixelY(y), color(color) {}
+        : x(x), y(y), color(color) {}
 };
 struct ServerStateUpdateEvent : public Event<ServerStateUpdateEvent> {
     static constexpr const char* Name = "ServerStateUpdateEvent";
-    int pixelX, pixelY;
+    int x, y;
     uint32_t color;
 
     ServerStateUpdateEvent(int x, int y, uint32_t color)
-        : pixelX(x), pixelY(y), color(color) {}
+        : x(x), y(y), color(color) {}
 };
 
 

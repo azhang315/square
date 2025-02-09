@@ -3,10 +3,15 @@ Module.onRuntimeInitialized = function () {
     console.log("WASM Module Loaded!");
 
     const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
+    // const ctx = canvas.getContext('2d'); // NOTE: you can NOT request two contexts back to back
+    
 
     console.log("WASM Loaded");
     Module._test_server_log();
+
+    const gl2 = canvas.getContext('webgl2');
+    console.log("gl2 context: ")
+    console.log(gl2); // should not be null
 
 
     // // Manually call main() from JS
@@ -15,8 +20,5 @@ Module.onRuntimeInitialized = function () {
         console.log("main exists")
     }
 
-    // // Test log to verify server-side logging
-    Module._test_server_log();
-    Module._test_server_log();
-    Module._test_server_log();
+
 };

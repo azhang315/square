@@ -54,10 +54,7 @@ void Application::run()
 {
   spdlog::info("Application::run()");
 
-#ifndef FPS
-#define FPS 60
-#endif
-    emscripten_set_main_loop_arg(this->em_process_frame, this, FPS, true);
+    emscripten_set_main_loop_arg(this->em_process_frame, this, 0, true); // rAF
 }
 
 

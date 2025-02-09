@@ -29,8 +29,8 @@ class Canvas :                public EventNotifierMixIn<Canvas> // NetTransport,
 public:
     Canvas() = default;
     ~Canvas() = default;
-    static constexpr uint16_t HEIGHT = 1000;
-    static constexpr uint16_t WIDTH = 1000;
+    static constexpr uint16_t HEIGHT = 256;
+    static constexpr uint16_t WIDTH = 256;
 
 
     uint32_t get_pixel(uint16_t x, uint16_t y) const;
@@ -41,7 +41,9 @@ public:
     void handle_event(const Event<MouseDownEvent> &e) {
         spdlog::info("Canvas::Event<MouseDownEvent>()");
 
-        Event<CanvasUpdateEvent> new_e;
+        auto mde = static_cast<const MouseDownEvent&>(e);
+
+        CanvasUpdateEvent new_e(mde.x, mde.y, mde.color);
         notify_listeners(new_e);
     }
 
