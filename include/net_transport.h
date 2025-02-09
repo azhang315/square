@@ -3,15 +3,14 @@
 #include <cstddef>
 #include <event_dispatch.h>
 
-class NetTransport : public EventListenerMixIn<NetTransport>,
-                     public EventNotifierMixIn<NetTransport>
+class NetTransport :                      public EventNotifierMixIn<NetTransport>
 {
 private:
     void sendPacket(const char *data, size_t size);
     void receivePacket();
 public:
-    NetTransport();
-    ~NetTransport();
+    NetTransport() = default;
+    ~NetTransport() = default;
 
     /* Servers */
     void start_client();
@@ -19,13 +18,9 @@ public:
 
 
 
-
     /* Events  */
     void on_server_update(); // get pixel, rollback if incorrect on local
-
-    /* Listener Interface (Triggered by External Notifier) */
-    template <typename T>
-    void handle_event(const Event<T>& e);
+    void handle_event(const Event<CanvasUpdateEvent> &e) {};
 
 // Mix-in inherited
 protected: 

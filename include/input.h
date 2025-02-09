@@ -10,27 +10,17 @@
 #include <event.h>
 #include <event_dispatch.h>
 
-class Input : public EventNotifierMixIn<Input>,
-              public EventListenerMixIn<Input>
+class Input : public EventNotifierMixIn<Input>
 {
 public:
     Input() = default;
     ~Input() = default;
 
     void init();   // register with emscripten
-    void update(); // process queued input events
-
-    // bool is_mouse_down() const { return m_current_states.at(InputCode::MouseDown); }
-    // bool is_mouse_down_current_frame() const { return m_mouse_down_current_frame; }
-
-    // bool poll_one_event(InputEvent &out);
-    
+    void update() {} // process queued input events
 
     static EM_BOOL on_mouse_down(int eventType, const EmscriptenMouseEvent *e, void *userData);
     static EM_BOOL on_mouse_up(int eventType, const EmscriptenMouseEvent *e, void *userData);
-
-
-    // void handle_event(const EventType& e_type);
 
 private:
     // inline void queue_one_event(InputEvent event);

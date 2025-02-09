@@ -4,45 +4,34 @@
 #include <event.h>
 #include <emscripten/em_asm.h>
 
-Canvas::Canvas() : EventListenerMixIn<Canvas>(), EventNotifierMixIn<Canvas>(),
-                   pixel_buffer(HEIGHT * WIDTH, c_white)
-{
-}
+// Canvas::Canvas() : EventNotifierMixIn<Canvas>(),
+//                    pixel_buffer(HEIGHT * WIDTH, c_white)
+// {
+// }
 //    pixel_history_map({}),
 //    dirty_pixels({})
 
 // void Canvas::handle_event(const Event &e)
-template <typename T>
-void Canvas::handle_event(const Event<T> &e)
-{
-    if constexpr (std::is_same_v<T, ServerStateUpdateEvent>)
-    {
-        apply_server_state_update(e);
-    }
-    else if constexpr (std::is_same_v<T, ServerStateUpdateEvent>)
-    {
-        apply_server_state_conflict_rollback(e);
-    }
-    else if constexpr (std::is_same_v<T, MouseDownEvent>)
-    {
-        apply_optimistic_local_update(e);
-    }
-    else
-    {
-        static_assert(false, "Unhandled event type!");
-    }
-
-    // std::visit([&](auto &&data)
-    //            {
-    //     using T = std::decay_t<decltype(data)>;
-
-    //     if constexpr (std::is_same_v<T, EventServerStateUpdate>)
-    //         Canvas::apply_server_state_update(data);
-    //     else if constexpr (std::is_same_v<T, EventServerStateConflict>)
-    //         Canvas::apply_server_state_conflict_rollback(data);
-    //     else if constexpr (std::is_same_v<T, EventMouseDown>)
-    //         Canvas::apply_optimistic_local_update(data); }, e.e_data);
-}
+// template <typename T>
+// void Canvas::handle_event(const Event<T> &e)
+// {
+//     if constexpr (std::is_same_v<T, ServerStateUpdateEvent>)
+//     {
+//         apply_server_state_update(e);
+//     }
+//     else if constexpr (std::is_same_v<T, ServerStateUpdateEvent>)
+//     {
+//         apply_server_state_conflict_rollback(e);
+//     }
+//     else if constexpr (std::is_same_v<T, MouseDownEvent>)
+//     {
+//         apply_optimistic_local_update(e);
+//     }
+//     else
+//     {
+//         static_assert(false, "Unhandled event type!");
+//     }
+// }
 inline void Canvas::apply_optimistic_local_update(const MouseDownEvent &e)
 {
     // auto& pixel = pixel_history_map[{x, y}];

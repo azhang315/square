@@ -24,34 +24,24 @@ struct PixelHistory
     void add_update();
 };
 
-template <typename... Tl> // Listeners
-class Canvas : public EventListenerMixIn<Canvas>,
-               public EventNotifierMixIn<Canvas<Tl...>, Tl...> // NetTransport, Render
+class Canvas :                public EventNotifierMixIn<Canvas> // NetTransport, Render
 {
-private:
-    void handle_event(const Event<MouseDownEvent>& event) {
-        notify(event);
-    }
 public:
-    Canvas(Tl &...listeners) : EventNotifierMixIn<Canvas<... Tl>, Tl...>();
+    Canvas() = default;
+    ~Canvas() = default;
     static constexpr uint16_t HEIGHT = 1000;
     static constexpr uint16_t WIDTH = 1000;
-    Canvas();
-    // Canvas(Render render);
+
 
     uint32_t get_pixel(uint16_t x, uint16_t y) const;
     void set_pixel(const uint16_t x, const uint16_t y, const uint32_t c);
     void clear_canvas();
 
-    // void handle_event(const EventType &event_type, void *e_data);
-    template <typename T>
-    void handle_event(const Event<T> &e);
+    void handle_event(const Event<ServerStateUpdateEvent> &e) {};
+    void handle_event(const Event<MouseDownEvent> &e) {
+        notify_listeners(e);
+    }
 
-    // Rendering
-    // void draw()
-    // {
-    //     this->render.draw(*this);
-    // }
     bool is_dirty() const { return render_dirty; };
     void clear_dirty() { render_dirty = false; };
     const uint32_t *get_pixel_buffer() const { return pixel_buffer.data(); };
@@ -61,13 +51,6 @@ public:
 
     // Future Work
     void set_stroke(); // h/w accelerate
-
-    // Mix-in inherited
-protected:
-    /* Notifier Interface (Publishes to Listeners) */
-    template <typename T>
-    void notify_listeners(const Event<T> &e);
-
 private:
     uint64_t local_seq_num = 0;
     std::vector<uint32_t> pixel_buffer;
