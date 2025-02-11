@@ -32,7 +32,6 @@ public:
 
         spdlog::info("Listener added: {} -> {}", typeid(Event<Te>).name(), typeid(Derived).name());
 
-        // m_listeners<Te>().emplace_back(callback);
         m_listeners<Te>.emplace_back(callback);
     }
 
@@ -57,18 +56,6 @@ public:
 private:
     template <typename Te>
     inline static std::vector<std::function<void(const Event<Te>&)>> m_listeners;
-    
-
-    // template <typename Te>
-    // inline std::vector<std::function<void(const Event<Te> &)>> &m_listeners()
-    // {
-    //     static std::vector<std::function<void(const Event<Te> &)>> l;
-    //     spdlog::info("m_listeners()");
-    //     int tmp = l.size();
-    //     spdlog::info("m_listeners() -> l.size(): {}", tmp);
-
-    //     return l;
-    // }
 };
 // Global add_listener Helper
 template <typename Te, typename Tn, typename Tl>

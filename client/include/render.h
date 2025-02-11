@@ -17,5 +17,9 @@ public:
     void init();
     void draw(const void* pixelData, bool isDirty);
     void commit_to_gpu(const void* pixelBuffer, int w, int h);
-    void handle_event(const Event<CanvasUpdateEvent>& e);
+    void handle_event(const Event<CanvasUiUpdateEvent>& e);
+    void handle_event(const Event<CanvasUiBatchUpdateEvent>& e) {
+        spdlog::info("Render <- UI BATCH");
+
+    }
 };

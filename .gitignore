@@ -37,3 +37,4 @@ local
 build
 web/build
 logs
+build*

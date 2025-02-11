@@ -39,13 +39,13 @@ void Application::init()
     add_listener<MouseDownEvent>(m_input.get(), m_canvas.get());
 
     // Canvas -> Network
-    add_listener<CanvasUpdateEvent>(m_canvas.get(), m_net_transport.get());
+    add_listener<CanvasLocalUpdateEvent>(m_canvas.get(), m_net_transport.get());
 
     // Canvas -> Render
-    add_listener<CanvasUpdateEvent>(m_canvas.get(), m_render.get());
+    add_listener<CanvasUiUpdateEvent>(m_canvas.get(), m_render.get());
 
     // Network -> Canvas
-    add_listener<ServerStateUpdateEvent>(m_net_transport.get(), m_canvas.get());
+    add_listener<CanvasServerUpdateEvent>(m_net_transport.get(), m_canvas.get());
 
 
 }
@@ -70,7 +70,13 @@ void Application::em_process_frame(void *arg)
     //            input
     //              |
     //               \
-    //          net<->canvas
+    //          net<->canvas<->render
+
+                      //     [ Authoritative Server ]
+                                //     ↑
+                                //     ↓ (Sync: Pixel Updates, Conflict Resolutions)
+// [ Input (Mouse/Drag) ] --> [ Canvas (Logical State) ] --> [ Render (WebGL/Scaling) ]
+
 
     // Batched: Network Events
     // Batched: Synchronization Processing

@@ -30,20 +30,30 @@ struct MouseDownEvent : public Event<MouseDownEvent> {
     uint32_t color;
     MouseDownEvent(int x, int y, uint32_t color) : x(x), y(y), color(color) {};
 };
-struct CanvasUpdateEvent : public Event<CanvasUpdateEvent> {
-    static constexpr const char* Name = "CanvasUpdateEvent";
+struct CanvasUiUpdateEvent : public Event<CanvasUiUpdateEvent> {
+    static constexpr const char* Name = "CanvasUiUpdateEvent";
     int x, y;
     uint32_t color;
-    CanvasUpdateEvent(int x, int y, uint32_t color)
+    CanvasUiUpdateEvent(int x, int y, uint32_t color)
         : x(x), y(y), color(color) {}
 };
-struct ServerStateUpdateEvent : public Event<ServerStateUpdateEvent> {
-    static constexpr const char* Name = "ServerStateUpdateEvent";
+struct CanvasUiBatchUpdateEvent : public Event<CanvasUiBatchUpdateEvent> {}; // future
+struct CanvasLocalUpdateEvent : public Event<CanvasLocalUpdateEvent> {
+    static constexpr const char* Name = "CanvasLocalUpdateEvent";
     int x, y;
     uint32_t color;
+    int seq;
+    CanvasLocalUpdateEvent(int x, int y, uint32_t color, int seq) : x(x), y(y), color(color), seq(seq) {}
+};
 
-    ServerStateUpdateEvent(int x, int y, uint32_t color)
-        : x(x), y(y), color(color) {}
+struct CanvasServerUpdateEvent : public Event<CanvasServerUpdateEvent> {
+    static constexpr const char* Name = "CanvasServerUpdateEvent";
+    int x, y;
+    uint32_t color;
+    int seq;
+
+    CanvasServerUpdateEvent(int x, int y, uint32_t color, int seq)
+        : x(x), y(y), color(color), seq(seq) {}
 };
 
 
