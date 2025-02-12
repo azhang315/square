@@ -39,6 +39,3 @@ Two CMake presets defined:
    cd client/web/build
    python3 -m http.server 8080
    ```
-```bash
-rm -rf build/native build/wasm
-```

@@ -2,11 +2,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(Client)
 
-# Emscripten-specific settings
-if(EMSCRIPTEN)
-    set(CMAKE_EXECUTABLE_SUFFIX ".html")
-endif()
-
 # Gather client sources
 file(GLOB CLIENT_SOURCES src/*.cpp)
 add_executable(client ${CLIENT_SOURCES})
@@ -51,9 +46,9 @@ target_link_options(client PRIVATE
     "-s OFFSCREEN_FRAMEBUFFER=1"
     "-s USE_BOOST_HEADERS=1"
     "-s GL_DEBUG=1"
-    "-pthread"
-    "-s ENVIRONMENT=web,worker"
-    "-s PTHREAD_POOL_SIZE=32"
+    # "-pthread"
+    # "-s ENVIRONMENT=web,worker"
+    # "-s PTHREAD_POOL_SIZE=32"
 )
 endif()
 if(NOT EMSCRIPTEN)
