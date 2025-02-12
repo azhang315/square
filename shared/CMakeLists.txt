@@ -1,23 +1,7 @@
-# add_library(shared STATIC
-#     include/shared/event.h
-#     include/shared/event_dispatch.h
-# )
+# shared/CMakeLists.txt
+add_library(shared INTERFACE)
 
-# # Include the shared headers
-# target_include_directories(shared PUBLIC include)
-
-# # Expose both event.h and event_dispatch.h
-# install(FILES 
-#     include/shared/event.h
-#     include/shared/event_dispatch.h
-#     DESTINATION include/shared
-# )
-add_library(shared STATIC
-    include/shared/event.h
-    include/shared/event_dispatch.h
-)
-
-target_include_directories(shared PUBLIC include)
+target_include_directories(shared INTERFACE include)
 
 # Adjust settings for Emscripten if needed
 if(EMSCRIPTEN)

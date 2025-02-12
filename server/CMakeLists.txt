@@ -1,24 +1,21 @@
-# server/CMakeLists.txt
 cmake_minimum_required(VERSION 3.14)
-project(Server)
+project(Server LANGUAGES CXX)
 
-# Server sources
-file(GLOB SERVER_SOURCES src/*.cpp src/network/*.cpp src/core/*.cpp)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Add executable
+# Recursively collect all .cpp source files in src/ (and subdirectories).
+file(GLOB_RECURSE SERVER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 add_executable(server ${SERVER_SOURCES})
 
-# Link against shared library
-target_include_directories(server PRIVATE include)
+# Add your local include directories.
+target_include_directories(server PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# Link against the shared static library.
 target_link_libraries(server PRIVATE shared)
 
-# Include directories
-target_include_directories(server PRIVATE include)
+# Find dependencies via vcpkg (make sure the vcpkg toolchain is active).
+find_package(spdlog CONFIG REQUIRED)
 
-# Boost Asio (Header-only)
-find_package(Boost REQUIRED COMPONENTS system)
-target_link_libraries(server PRIVATE Boost::system pthread)
-
-# spdlog for logging
-find_package(spdlog REQUIRED)
-target_link_libraries(server PRIVATE spdlog::spdlog)
+# Link Boost and spdlog. (pthread is added here as needed for Boost on Linux.)
+target_link_libraries(server PRIVATE spdlog::spdlog pthread)

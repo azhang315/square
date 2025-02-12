@@ -37,7 +37,12 @@ struct CanvasUiUpdateEvent : public Event<CanvasUiUpdateEvent> {
     CanvasUiUpdateEvent(int x, int y, uint32_t color)
         : x(x), y(y), color(color) {}
 };
-struct CanvasUiBatchUpdateEvent : public Event<CanvasUiBatchUpdateEvent> {}; // future
+struct CanvasUiBatchUpdateEvent : public Event<CanvasUiBatchUpdateEvent> {
+    static constexpr const char* Name = "CanvasUIBatchUpdateEvent";
+    int x, y;
+    uint32_t color;
+    CanvasUiBatchUpdateEvent(int x, int y, uint32_t color) : x(x), y(y), color(color) {}
+};
 struct CanvasLocalUpdateEvent : public Event<CanvasLocalUpdateEvent> {
     static constexpr const char* Name = "CanvasLocalUpdateEvent";
     int x, y;

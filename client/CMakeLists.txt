@@ -1,40 +1,61 @@
+# client/CMakeLists.txt
 cmake_minimum_required(VERSION 3.14)
 project(Client)
 
-# Emscripten-specific flags
+# Emscripten-specific settings
 if(EMSCRIPTEN)
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
 endif()
 
-# Client sources
+# Gather client sources
 file(GLOB CLIENT_SOURCES src/*.cpp)
 add_executable(client ${CLIENT_SOURCES})
 
-# Link against shared library
+# Include your client’s headers (if any)
 target_include_directories(client PRIVATE include)
+
+# Link against the shared library target (set up elsewhere)
 target_link_libraries(client PRIVATE shared)
 
-# Find packages (handled by vcpkg)
+# Find packages via vcpkg (which is already integrated via your toolchain file)
 find_package(spdlog CONFIG REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system)
+target_link_libraries(client PRIVATE spdlog::spdlog)
 
-# Link libraries
-target_link_libraries(client PRIVATE spdlog::spdlog Boost::system)
-
-
-# Link Boost headers (header-only)
-target_include_directories(client PRIVATE ${boost_asio_SOURCE_DIR}/include ${boost_system_SOURCE_DIR}/include)
-target_link_libraries(client PRIVATE Boost::system)
-
-# Emscripten build flags
+# Set additional Emscripten build flags, preferably on the target itself
 if(EMSCRIPTEN)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s ASSERTIONS=1")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s EXPORTED_FUNCTIONS=['_main','_test_server_log']")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s USE_WEBGL2=1 -s MIN_WEBGL_VERSION=2 -s FULL_ES3=1")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s OFFSCREEN_FRAMEBUFFER=1 -s GL_DEBUG=1 -pthread")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s ENVIRONMENT=web,worker -s PTHREAD_POOL_SIZE=32")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -Wall -Wextra -Wpedantic")
+target_compile_options(client PRIVATE
+    "-O0"
+    "-Wall"
+    "-Wextra"
+    "-Wpedantic"
+    # "-Wshadow"
+    # "-Wconversion"
+    # "-Wsign-conversion"
+    # "-Wcast-align"
+    # "-Wundef"
+    # "-Wfloat-equal"
+    # "-Wcast-qual"
+    # "-Wwrite-strings"
+    # "-Wuninitialized"
+    # "-Wredundant-decls"
+    # "-Wold-style-cast"
+)
+target_link_options(client PRIVATE 
+    "-s WASM=1"
+    "-s ALLOW_MEMORY_GROWTH=1"
+    "-s ASSERTIONS=1"
+    "-s EXPORTED_FUNCTIONS=['_main','_test_server_log']"
+    "-s USE_WEBGL2=1"
+    "-s MIN_WEBGL_VERSION=2"
+    "-s FULL_ES3=1"
+    "-s OFFSCREEN_FRAMEBUFFER=1"
+    "-s USE_BOOST_HEADERS=1"
+    "-s GL_DEBUG=1"
+    "-pthread"
+    "-s ENVIRONMENT=web,worker"
+    "-s PTHREAD_POOL_SIZE=32"
+)
 endif()
-
-
-
+if(NOT EMSCRIPTEN)
+  message(FATAL_ERROR "EMSCRIPTEN must be enabled for this build! Please invoke CMake with -DEMSCRIPTEN=ON and the proper Emscripten toolchain.")
+endif()

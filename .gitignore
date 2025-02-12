@@ -38,3 +38,5 @@ build
 web/build
 logs
 build*
+CMakeUserPresets.json
+vcpkg_installed
