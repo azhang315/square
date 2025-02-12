@@ -10,19 +10,6 @@
 #include <net_transport.h>
 
 constexpr uint32_t c_white = 0xFFFFFFFF;
-// struct PixelUpdate
-// {
-//     uint16_t x, y;
-//     uint32_t color;
-//     uint64_t seq; // CRDT: last modified seq
-// };
-
-// struct PixelHistory - implementable via simple counter?
-// { // Sliding Window
-//     // std::deque<int>
-//     void ack_update();
-//     void add_update();
-// };
 
 class Canvas : public EventNotifierMixIn<Canvas> // NetTransport, Render
 {
@@ -38,24 +25,28 @@ public:
 
     void handle_event(const Event<CanvasServerUpdateEvent> &e) {
         spdlog::info("Canvas <- SERVER UPDATE");
-
-        CanvasUiBatchUpdateEvent new_e1;
-        notify_listeners(new_e1);
+        auto& d = e.data;
+        Event<CanvasUiBatchUpdateEvent> e_canvas_ui_batch_update(d.x,d.y,d.color);
+        notify_listeners(e_canvas_ui_batch_update);
+        // TODO: refactor Event base class constructor to have forwarding args
+        // TODO: investigate not static_casting and including a templated member variable to Event
+        
     };
     void handle_event(const Event<MouseDownEvent> &e)
     {
         spdlog::info("Canvas <- MOUSE DOWN");
 
-        auto mde = static_cast<const MouseDownEvent &>(e);
+        auto& d = e.data;
 
-        CanvasUiUpdateEvent new_e1(mde.x, mde.y, mde.color);
-        notify_listeners(new_e1);
+        Event<CanvasUiUpdateEvent> e_canvas_ui_update(d.x, d.y, d.color);
+        notify_listeners(e_canvas_ui_update);
 
         // TODO: lock
-        int next_seq = pixel_sequence[get_index(mde.x, mde.y)]++;
+        int next_seq = pixel_sequence[get_index(d.x, d.y)]++;
         // unlock
-        CanvasLocalUpdateEvent new_e2(mde.x, mde.y, mde.color, next_seq);
-        notify_listeners(new_e2);
+
+        Event<CanvasLocalUpdateEvent> e_canvas_local_update(d.x, d.y, d.color, next_seq);
+        notify_listeners(e_canvas_local_update);
     }
 
     bool is_dirty() const { return render_dirty; };
@@ -72,7 +63,7 @@ private:
     static inline uint32_t get_index(int x, int y) {return y * WIDTH + x;}
     uint64_t local_seq_num = 0;
     std::vector<uint32_t> pixel_buffer;                    // index -> RGBA
-    std::unordered_map<uint32_t, uint64_t> pixel_sequence; // index -> seq_num
+    std::unordered_map<uint32_t, uint64_t> pixel_sequence; // index -> seq_num // refactor
     std::vector<CanvasServerUpdateEvent> batched_server_updates;              // conflict resolved
 
 

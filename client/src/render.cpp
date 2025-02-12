@@ -219,7 +219,8 @@ void Render::handle_event(const Event<CanvasUiUpdateEvent> &e)
 {
     spdlog::info("Render <- CANVAS UI");
 
-    const auto &cue = static_cast<const CanvasUiUpdateEvent &>(e);
+    // const auto &cue = static_cast<const CanvasUiUpdateEvent &>(e);
+    const auto& cue = e.data;
     spdlog::info("Drawing random pixel at ({}, {})", cue.x, cue.y);
 
     static bool seeded = false;

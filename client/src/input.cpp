@@ -24,7 +24,7 @@ EM_BOOL Input::on_mouse_down(int eventType, const EmscriptenMouseEvent *e, void 
     if (input)
     {
         auto [x, y] = normalizeCSS(e);
-        MouseDownEvent event(x, y, 0);
+        Event<MouseDownEvent> event(x, y, 0);
         input->notify_listeners(event);
         
         input->m_mouse_down = true;
@@ -45,7 +45,7 @@ EM_BOOL Input::on_mouse_move(int eventType, const EmscriptenMouseEvent *e, void 
     if (input && input->m_mouse_down)
     {
         auto [x, y] = normalizeCSS(e);
-        MouseDownEvent event(x, y, 0);
+        Event<MouseDownEvent> event(x, y, 0);
         input->notify_listeners(event);
     }
     return EM_TRUE;

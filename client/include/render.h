@@ -20,6 +20,7 @@ public:
     void handle_event(const Event<CanvasUiUpdateEvent>& e);
     void handle_event(const Event<CanvasUiBatchUpdateEvent>& e) {
         spdlog::info("Render <- UI BATCH");
+        e.data;
 
     }
 };

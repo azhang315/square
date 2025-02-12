@@ -2,65 +2,62 @@
 #pragma once
 #include <cstdint>
 
-
-template<typename Derived>
-class Event
+template <typename T>
+struct Event
 {
-private:
-    // EventData m_data; // offload to derived
-    
-public:
-    static const char* StaticName() { return Derived::Name; };
-    // Event(Derived type) : m_type(type) {}
+    T data;
+    template <typename... Args>
+    Event(Args &&...args) : data(std::forward<Args>(args)...) {}
     ~Event() = default;
 
-    // inline const Derived GetType() const { return m_Type; }
-
-    // template<typename EventType>
-    // inline EventType ToType() const
-    // {
-    //     return static_cast<const EventType&>(*this);
-    // }
+    static const char *StaticName() { return T::Name; };
 };
 
-struct MouseDownEvent : public Event<MouseDownEvent> {
-    static constexpr const char* Name = "MouseDownEvent";
+// struct MouseDownEvent : public Event<MouseDownEvent> {
+struct MouseDownEvent
+{
+    static constexpr const char *Name = "MouseDownEvent";
     int x;
     int y;
     uint32_t color;
     MouseDownEvent(int x, int y, uint32_t color) : x(x), y(y), color(color) {};
 };
-struct CanvasUiUpdateEvent : public Event<CanvasUiUpdateEvent> {
-    static constexpr const char* Name = "CanvasUiUpdateEvent";
+// struct CanvasUiUpdateEvent : public Event<CanvasUiUpdateEvent> {
+struct CanvasUiUpdateEvent
+{
+    static constexpr const char *Name = "CanvasUiUpdateEvent";
     int x, y;
     uint32_t color;
-    CanvasUiUpdateEvent(int x, int y, uint32_t color)
-        : x(x), y(y), color(color) {}
+    CanvasUiUpdateEvent(int x, int y, uint32_t color) : x(x), y(y), color(color) {}
 };
-struct CanvasUiBatchUpdateEvent : public Event<CanvasUiBatchUpdateEvent> {
-    static constexpr const char* Name = "CanvasUIBatchUpdateEvent";
+// struct CanvasUiBatchUpdateEvent : public Event<CanvasUiBatchUpdateEvent> {
+struct CanvasUiBatchUpdateEvent
+{
+    static constexpr const char *Name = "CanvasUIBatchUpdateEvent";
     int x, y;
     uint32_t color;
     CanvasUiBatchUpdateEvent(int x, int y, uint32_t color) : x(x), y(y), color(color) {}
 };
-struct CanvasLocalUpdateEvent : public Event<CanvasLocalUpdateEvent> {
-    static constexpr const char* Name = "CanvasLocalUpdateEvent";
+// struct CanvasLocalUpdateEvent : public Event<CanvasLocalUpdateEvent> {
+struct CanvasLocalUpdateEvent
+{
+    static constexpr const char *Name = "CanvasLocalUpdateEvent";
     int x, y;
     uint32_t color;
     int seq;
     CanvasLocalUpdateEvent(int x, int y, uint32_t color, int seq) : x(x), y(y), color(color), seq(seq) {}
 };
 
-struct CanvasServerUpdateEvent : public Event<CanvasServerUpdateEvent> {
-    static constexpr const char* Name = "CanvasServerUpdateEvent";
+// struct CanvasServerUpdateEvent : public Event<CanvasServerUpdateEvent> {
+struct CanvasServerUpdateEvent
+{
+    static constexpr const char *Name = "CanvasServerUpdateEvent";
     int x, y;
     uint32_t color;
     int seq;
 
-    CanvasServerUpdateEvent(int x, int y, uint32_t color, int seq)
-        : x(x), y(y), color(color), seq(seq) {}
+    CanvasServerUpdateEvent(int x, int y, uint32_t color, int seq) : x(x), y(y), color(color), seq(seq) {}
 };
-
 
 /*
 

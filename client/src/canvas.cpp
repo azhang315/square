@@ -18,8 +18,8 @@ void Canvas::set_pixel(uint16_t x, uint16_t y, uint32_t color, uint64_t seq) {
         pixel_buffer[index] = color;
         pixel_sequence[index] = seq;
 
-        CanvasUiUpdateEvent new_e(x, y, color); // Don't notify network
-        notify_listeners(new_e);
+        Event<CanvasUiUpdateEvent> e_canvas_ui_update_event(x, y, color); // Don't notify network
+        notify_listeners(e_canvas_ui_update_event);
     }
 }
 
