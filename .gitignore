@@ -35,8 +35,8 @@
 *.vscode
 local
 build
-web/build
+web/build*
 logs
-build*
+build
 CMakeUserPresets.json
 vcpkg_installed

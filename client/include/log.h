@@ -1,10 +1,15 @@
 #pragma once
 #include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
 
 
-#include <filesystem>
-namespace fs = std::filesystem;
+extern "C" {
+void test_server_log();
+}
+
+// #include <spdlog/sinks/basic_file_sink.h>
+
+// #include <filesystem>
+// namespace fs = std::filesystem;
 
 // void setup_logger() {
 //     if (!fs::exists("logs")) {
@@ -16,9 +21,3 @@ namespace fs = std::filesystem;
 //     spdlog::flush_on(spdlog::level::info);  // Ensure logs flush immediately
 //     spdlog::info("Logger Initialized (Directory check passed)");
 // }
-
-extern "C" {
-    void test_server_log() {
-        spdlog::info("Test log from WASM entry point");
-    }
-}

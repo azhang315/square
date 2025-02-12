@@ -1,24 +1,27 @@
 // Wait for the WASM module to initialize
 Module.onRuntimeInitialized = function () {
     console.log("WASM Module Loaded!");
-
     const canvas = document.getElementById('canvas');
-    // const ctx = canvas.getContext('2d'); // NOTE: you can NOT request two contexts back to back
-    
-
-    console.log("WASM Loaded");
-    Module._test_server_log();
-
-    const gl2 = canvas.getContext('webgl2');
-    console.log("gl2 context: ")
-    console.log(gl2); // should not be null
-
-
-    // // Manually call main() from JS
     if (Module._main) {
-    //     Module._main();
         console.log("main exists")
     }
+    else {
+        console.log("main does not exist")
+    }
 
+    if (Module._test_server_log) {
+        console.log("cross vm logging exposed")
+        Module._test_server_log();
+    }
+    else {
+        console.log("cross vm logging not exposed")
+    }
+    // Module._test_server_log();
 
+    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+    if (gl) {
+        console.log("WebGL Version:", gl.getParameter(gl.VERSION));
+    } else {
+        console.log("Failed to initialize any WebGL context.");
+    }
 };
