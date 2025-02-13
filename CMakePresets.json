@@ -14,7 +14,7 @@
         "generator": "Ninja",
         "binaryDir": "${sourceDir}/build/native",
         "cacheVariables": {
-          "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+          "CMAK E_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
           "VCPKG_TARGET_TRIPLET": "x64-linux"
         }
       },
@@ -24,7 +24,7 @@
         "binaryDir": "${sourceDir}/build/wasm",
         "cacheVariables": {
           "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-          "VCPKG_TARGET_TRIPLET": "wasm32-emscripten",
+          "VCPKG_TARGET_TRIPLET": "custom-wasm32-emscripten",
           "EMSCRIPTEN":true,
           "VCPKG_CHAINLOAD_TOOLCHAIN_FILE":"$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
         }

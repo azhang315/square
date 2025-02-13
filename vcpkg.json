@@ -1,5 +1,9 @@
 {
   "dependencies": [
-    "spdlog"
-  ]
+    {
+      "name": "spdlog",
+      "default-features": false
+    }
+  ],
+  "overrides": []
 }
