@@ -68,7 +68,15 @@ target_link_options(client PRIVATE
     -sPROXY_TO_PTHREAD=1
     -lwebsocket.js 
     -sPROXY_POSIX_SOCKETS=1
+    -sPROXY_POSIX_SOCKETS 
+    -sPROXY_TO_PTHREAD
 )
+
+target_compile_definitions(client PRIVATE
+  CANVAS_WIDTH=128
+  CANVAS_HEIGHT=128
+)
+
 endif()
 if(NOT EMSCRIPTEN)
   message(FATAL_ERROR "EMSCRIPTEN must be enabled for this build! Please invoke CMake with -DEMSCRIPTEN=ON and the proper Emscripten toolchain.")

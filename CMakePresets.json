@@ -12,9 +12,9 @@
       {
         "name": "x64-linux",
         "generator": "Ninja",
-        "binaryDir": "${sourceDir}/build/native",
+        "binaryDir": "${sourceDir}/build/x64-linux",
         "cacheVariables": {
-          "CMAK E_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+          "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
           "VCPKG_TARGET_TRIPLET": "x64-linux"
         }
       },

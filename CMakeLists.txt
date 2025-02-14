@@ -17,4 +17,7 @@ if(EMSCRIPTEN)
     add_subdirectory(client)
 else()
     add_subdirectory(server)
+    add_subdirectory(tools/websocket_to_posix_proxy) # POSIX proxy
 endif()
+
+

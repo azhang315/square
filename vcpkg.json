@@ -3,7 +3,7 @@
     {
       "name": "spdlog",
       "default-features": false
-    }
-  ],
-  "overrides": []
+    },
+    "boost-asio"
+  ]
 }

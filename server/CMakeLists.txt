@@ -16,6 +16,7 @@ target_link_libraries(server PRIVATE shared)
 
 # Find dependencies via vcpkg (make sure the vcpkg toolchain is active).
 find_package(spdlog CONFIG REQUIRED)
-
+find_package(boost_asio CONFIG REQUIRED)
 # Link Boost and spdlog. (pthread is added here as needed for Boost on Linux.)
 target_link_libraries(server PRIVATE spdlog::spdlog pthread)
+target_link_libraries(server PRIVATE Boost::asio)
