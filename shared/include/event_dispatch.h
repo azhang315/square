@@ -5,20 +5,31 @@
 #include <unordered_map>
 #include <vector>
 #include <functional>
-#include <spdlog/spdlog.h>
+// #include <spdlog/spdlog.h>
+#include <utility>
+#include <log.h>
 
+
+template <typename Te>
+using EventPtr = std::shared_ptr<const Event<Te>>;
 
 // Default + Specialization
-template <typename Listener, typename EventType, typename = void>
+template <typename Tl, typename Te, typename = void>
 struct HasHandleEvent : std::false_type {};
-template <typename Listener, typename EventType>
-struct HasHandleEvent<Listener, EventType, std::void_t<
-    decltype(std::declval<Listener>().handle_event(std::declval<Event<EventType>>()))
+template <typename Tl, typename Te>
+struct HasHandleEvent<Tl, Te, std::void_t<
+    // decltype(std::declval<Listener>().handle_event(std::declval<Event<EventType>>()))
+    decltype(std::declval<Tl>().handle_event(std::declval<EventPtr<Te>>()))
 >> : std::true_type {};
 // Template
-template <typename Listener, typename EventType>
-constexpr bool HasHandleEvent_v = HasHandleEvent<Listener, EventType>::value;
+template <typename Tl, typename Te>
+constexpr bool HasHandleEvent_v = HasHandleEvent<Tl, Te>::value;
 
+
+template <typename Te, typename ...Args>
+inline EventPtr<Te> make_event(Args&&... args) {
+    return std::make_shared<const Event<Te>>(std::forward<Args>(args)...);
+}
 
 template <typename Derived> // Notifier
 class EventNotifierMixIn
@@ -26,36 +37,35 @@ class EventNotifierMixIn
 public:
     EventNotifierMixIn() = default;
     template <typename Te>
-    void add_listener(std::function<void(const Event<Te> &)> callback)
+    void add_listener(std::function<void(EventPtr<Te>)> callback)
     {
-        spdlog::info("EventDispatch::Notifier::add_listener()");
-
-        spdlog::info("Listener added: {} -> {}", typeid(Event<Te>).name(), typeid(Derived).name());
+        SLOG("EventDispatch::Notifier::add_listener()");
+        SLOG("Listener added: {} -> {}", typeid(EventPtr<Te>).name(), typeid(Derived).name());
 
         m_listeners<Te>.emplace_back(callback);
     }
 
         template <typename Te>
-        void notify_listeners(const Event<Te> &e)
+        void notify_listeners(EventPtr<Te> e)
         {
-            spdlog::info("EventDispatch::notify_listeners() for {}", typeid(Te).name());
+            SLOG("EventDispatch::notify_listeners() for {}", typeid(Te).name());
 
             auto& l = m_listeners<Te>;
-            spdlog::info("* Total listeners: {}", l.size());
+            SLOG("* Total listeners: {}", l.size());
             if (l.size() == 0) {
-                spdlog::info("NO HANDLERS REGISTERED");
+                SLOG("NO HANDLERS REGISTERED");
             }
 
             for (auto &callback : m_listeners<Te>)
             {
-                spdlog::info("* listener");
+                SLOG("* listener");
                 callback(e);
             }
         }
 
 private:
     template <typename Te>
-    inline static std::vector<std::function<void(const Event<Te>&)>> m_listeners;
+    inline static std::vector<std::function<void(EventPtr<Te>)>> m_listeners;
 };
 // Global add_listener Helper
 template <typename Te, typename Tn, typename Tl>
@@ -66,14 +76,14 @@ extern inline void add_listener(Tn *notifier, Tl *listener)
     static_assert(HasHandleEvent_v<Tl, Te>,
                   "Listener must have a handle_event(const Event<EventType>&) function");
 
-    spdlog::info("Global::add_listener()");
+    SLOG("Global::add_listener()");
 
-    spdlog::info("* Notifier -> {}", typeid(Tn).name());
+    SLOG("* Notifier -> {}", typeid(Tn).name());
 
-    spdlog::info("* Listener -> {}", typeid(Tl).name());
+    SLOG("* Listener -> {}", typeid(Tl).name());
 
     // add event callback
-    notifier->template add_listener<Te>([listener](const Event<Te> &event)
+    notifier->template add_listener<Te>([listener](EventPtr<Te> event)
                                         { listener->handle_event(event); });
 }
 
