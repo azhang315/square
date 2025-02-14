@@ -8,6 +8,7 @@
 #include <render.h>
 #include <event_dispatch.h>
 #include <net_transport.h>
+#include <log.h>
 
 constexpr uint32_t c_white = 0xFFFFFFFF;
 
@@ -23,30 +24,31 @@ public:
     void set_pixel(const uint16_t x, const uint16_t y, const uint32_t c, const uint64_t seq);
     void clear_canvas();
 
-    void handle_event(const Event<CanvasServerUpdateEvent> &e) {
-        spdlog::info("Canvas <- SERVER UPDATE");
-        auto& d = e.data;
-        Event<CanvasUiBatchUpdateEvent> e_canvas_ui_batch_update(d.x,d.y,d.color);
-        notify_listeners(e_canvas_ui_batch_update);
-        // TODO: refactor Event base class constructor to have forwarding args
-        // TODO: investigate not static_casting and including a templated member variable to Event
-        
-    };
-    void handle_event(const Event<MouseDownEvent> &e)
+    // void handle_event(const Event<CanvasServerUpdateEvent> &e) {
+    void handle_event(EventPtr<CanvasServerUpdateEvent> e)
     {
-        spdlog::info("Canvas <- MOUSE DOWN");
+        SLOG("Canvas <- SERVER UPDATE");
+        auto &d = e->data;
+        notify_listeners(make_event<CanvasUiBatchUpdateEvent>(d.x, d.y, d.color));
+    };
+    // void handle_event(const Event<MouseDownEvent> &e)
+    void handle_event(EventPtr<MouseDownEvent> e)
+    {
+        SLOG("Canvas <- MOUSE DOWN");
 
-        auto& d = e.data;
+        auto &d = e->data;
 
-        Event<CanvasUiUpdateEvent> e_canvas_ui_update(d.x, d.y, d.color);
-        notify_listeners(e_canvas_ui_update);
+        notify_listeners(make_event<CanvasUiUpdateEvent>(d.x, d.y, d.color));
+
+        SLOG("Canvas <- MOUSE DOWN: continue 1");
 
         // TODO: lock
         int next_seq = pixel_sequence[get_index(d.x, d.y)]++;
         // unlock
 
-        Event<CanvasLocalUpdateEvent> e_canvas_local_update(d.x, d.y, d.color, next_seq);
-        notify_listeners(e_canvas_local_update);
+        notify_listeners(make_event<CanvasLocalUpdateEvent>(d.x, d.y, d.color, next_seq));
+
+        SLOG("Canvas <- MOUSE DOWN: continue 2");
     }
 
     bool is_dirty() const { return render_dirty; };
@@ -55,17 +57,16 @@ public:
     // Event
     void batch_update();
 
-    void apply_server_update_batch(const std::vector<CanvasServerUpdateEvent>& updates);
+    void apply_server_update_batch(const std::vector<CanvasServerUpdateEvent> &updates);
 
     // Future Work
     void set_stroke(); // h/w accelerate
 private:
-    static inline uint32_t get_index(int x, int y) {return y * WIDTH + x;}
+    static inline uint32_t get_index(int x, int y) { return y * WIDTH + x; }
     uint64_t local_seq_num = 0;
-    std::vector<uint32_t> pixel_buffer;                    // index -> RGBA
-    std::unordered_map<uint32_t, uint64_t> pixel_sequence; // index -> seq_num // refactor
-    std::vector<CanvasServerUpdateEvent> batched_server_updates;              // conflict resolved
-
+    std::vector<uint32_t> pixel_buffer;                          // index -> RGBA
+    std::unordered_map<uint32_t, uint64_t> pixel_sequence;       // index -> seq_num // refactor
+    std::vector<CanvasServerUpdateEvent> batched_server_updates; // conflict resolved
 
     // std::vector<> batched_updates;              // conflict resolved
 

@@ -5,10 +5,10 @@
 #include <functional>
 #include <emscripten/em_types.h>
 #include <emscripten/html5.h>
-// #include "include/types.hpp"
-// #include "include/event_notification.hpp"
 #include <event.h>
 #include <event_dispatch.h>
+#include <log.h>
+#include <atomic>
 
 class Input : public EventNotifierMixIn<Input>
 {
@@ -23,7 +23,10 @@ public:
     static EM_BOOL on_mouse_move(int eventType, const EmscriptenMouseEvent *e, void *userData);
 
 private:
-    bool m_mouse_down;
+    // bool m_mouse_down;
+    std::atomic<bool> m_mouse_down;
+
+
     // inline void queue_one_event(InputEvent event);
     // void process_event(const InputEvent &event);
     // inline void process_event_mouse_down(InputEvent event);

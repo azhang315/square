@@ -5,6 +5,7 @@
 #include <event.h>
 #include <event_dispatch.h>
 
+#include <emscripten/proxying.h>
 
 
 #include <canvas.h>
@@ -13,46 +14,71 @@
 #include <render.h>
 
 #include <log.h>
+#include <emscripten/threading.h> 
+#include <emscripten/em_asm.h>
+#include <emscripten/eventloop.h>
 
 Application::Application()
 {
-  spdlog::info("Application::Application()");
-  spdlog::info("Skip: Logger initialization");
+  SLOG("Application::Application()");
+  SLOG("Skip: Logger initialization");
     init();
 }
 
+void offload_render_initgl(void* arg) {
+  SLOG("offload_render_initgl()");
+  std::shared_ptr<Render>* m_render_ptr = static_cast<std::shared_ptr<Render>*>(arg);
+  (*m_render_ptr)->init_gl();
+} // keptalive
+
 void Application::init()
 {
-  spdlog::info("Application::init()");
+  SLOG("Application::init()");
 
     m_input = std::make_unique<Input>();
-    m_net_transport = std::make_unique<NetTransport>();
     m_canvas = std::make_unique<Canvas>();
-    m_render = std::make_unique<Render>(Canvas::HEIGHT, Canvas::WIDTH);
+    m_render = std::make_shared<Render>(Canvas::HEIGHT, Canvas::WIDTH);
+  
+    SLOG("TRY offload_render_initgl()");
+    emscripten_sync_run_in_main_runtime_thread(EM_FUNC_SIG_VI, offload_render_initgl, &m_render);
+    
+    // emscripten_sync_run_in_main_runtime_thread(EM_FUNC_SIG_V, [&]() {
+    // // m_net_transport = std::make_unique<NetTransport>();
+    // });
 
-    spdlog::info("Application::init() -> unique pointers made");
+    SLOG("attempt construction");
+    SLOG("success");
 
 
+    SLOG("Application::init() -> subsystems constructed");
+
+    #ifndef REMOTE_SERVER_IP
+    #define REMOTE_SERVER_IP "localhost"
+    #define REMOTE_SERVER_PORT 9000
+    #endif
+    // m_net_transport->start_udp_client(REMOTE_SERVER_IP, REMOTE_SERVER_PORT);
+
+    
 
     /* Input Events */
     // Input -> Canvas // only one that works
     add_listener<MouseDownEvent>(m_input.get(), m_canvas.get());
 
     // Canvas -> Network
-    add_listener<CanvasLocalUpdateEvent>(m_canvas.get(), m_net_transport.get());
+    // add_listener<CanvasLocalUpdateEvent>(m_canvas.get(), m_net_transport.get());
 
     // Canvas -> Render
     add_listener<CanvasUiUpdateEvent>(m_canvas.get(), m_render.get());
 
     // Network -> Canvas
-    add_listener<CanvasServerUpdateEvent>(m_net_transport.get(), m_canvas.get());
+    // add_listener<CanvasServerUpdateEvent>(m_net_transport.get(), m_canvas.get());
 
 
 }
 
 void Application::run()
 {
-  spdlog::info("Application::run()");
+  SLOG("Application::run()");
 
     emscripten_set_main_loop_arg(this->em_process_frame, this, 0, true); // rAF
 }
@@ -60,22 +86,17 @@ void Application::run()
 
 void Application::em_process_frame(void *arg)
 {
-    // spdlog::info("Application::em_process_frame()");
+    // SLOG("Application::em_process_frame()");
 
     Application *app = static_cast<Application *>(arg);
 
     // 1. Queued Event Processing
-    app->m_input->update(); // poll new inputs
+    // app->m_input->update(); // poll new inputs
 
     //            input
     //              |
     //               \
     //          net<->canvas<->render
-
-                      //     [ Authoritative Server ]
-                                //     ↑
-                                //     ↓ (Sync: Pixel Updates, Conflict Resolutions)
-// [ Input (Mouse/Drag) ] --> [ Canvas (Logical State) ] --> [ Render (WebGL/Scaling) ]
 
 
     // Batched: Network Events

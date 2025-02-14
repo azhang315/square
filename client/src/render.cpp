@@ -3,10 +3,17 @@
 #include <emscripten/html5.h>
 #include <cstdlib>
 #include <ctime>
+#include <emscripten/threading.h>
+
+
+
 
 // Shader Compilation Helper
 GLuint compile_shader(GLenum type, const char *source)
 {
+    int is_worker = EM_ASM_INT(return ENVIRONMENT_IS_WORKER);
+    assert(!is_worker);
+
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, nullptr);
     glCompileShader(shader);
@@ -25,6 +32,9 @@ GLuint compile_shader(GLenum type, const char *source)
 // Program Linking Helper
 GLuint create_program(GLuint vertexShader, GLuint fragmentShader)
 {
+    int is_worker = EM_ASM_INT(return ENVIRONMENT_IS_WORKER);
+    assert(!is_worker);
+
     GLuint program = glCreateProgram();
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);
@@ -92,7 +102,21 @@ EM_BOOL on_resize(int eventType, const EmscriptenUiEvent *e, void *userData)
 // Render::Render(Canvas* canvas) : canvas(canvas)
 Render::Render(int w, int h) : width(w), height(h), textureID(0), VAO(0), VBO(0), shaderProgram(0)
 {
-    init();
+
+    if (emscripten_is_main_runtime_thread()) {
+        SLOG("Render::Render(): running in main runtime thread");
+    }
+    if (!emscripten_is_main_browser_thread()) {
+        SLOG("Render::Render(): NOT running in main browser thread: exit");
+        return;
+    }
+    SLOG("Running in main browser thread - proceeding with initialization");
+
+    
+
+    // init();
+
+
 
     // adjust_canvas_resolution();
     // apply_webgl_scaling();
@@ -101,6 +125,9 @@ Render::Render(int w, int h) : width(w), height(h), textureID(0), VAO(0), VBO(0)
 
 Render::~Render()
 {
+    int is_worker = EM_ASM_INT(return ENVIRONMENT_IS_WORKER);
+    assert(!is_worker);
+
     if (textureID)
         glDeleteTextures(1, &textureID);
     if (VBO)
@@ -111,14 +138,19 @@ Render::~Render()
         glDeleteProgram(shaderProgram);
 }
 
-void Render::init()
+void Render::init_gl()
 {
-    spdlog::info("Render::init() - Setting up WebGL2");
+    int is_worker = EM_ASM_INT(return ENVIRONMENT_IS_WORKER);
+    assert(!is_worker);
+
+    SLOG("Render::init() - Setting up WebGL2");
 
     EmscriptenWebGLContextAttributes attrs;
     emscripten_webgl_init_context_attributes(&attrs);
     attrs.majorVersion = 2;
     attrs.minorVersion = 0;
+
+    
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context("#canvas", &attrs);
     if (context <= 0)
     {
@@ -166,11 +198,15 @@ void Render::init()
 
     draw(nullptr, false);
 
-    spdlog::info("WebGL2 initialized successfully!");
+    SLOG("WebGL2 initialized successfully!");
 }
 
 void Render::commit_to_gpu(const void *pixelBuffer, int x, int y)
 {
+    int is_worker = EM_ASM_INT(return ENVIRONMENT_IS_WORKER);
+    SLOG("ENIRONMENT_IS_WORKER: {}", is_worker);
+    assert(!is_worker);
+
     if (x >= 0 && x < width && y >= 0 && y < height)
     {
         glBindTexture(GL_TEXTURE_2D, textureID);
@@ -190,6 +226,9 @@ void Render::commit_to_gpu(const void *pixelBuffer, int x, int y)
 
 void Render::draw(const void *pixelData, bool isDirty)
 {
+    int is_worker = EM_ASM_INT(return ENVIRONMENT_IS_WORKER);
+    assert(!is_worker);
+
     glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(shaderProgram);
     glActiveTexture(GL_TEXTURE0);
@@ -215,13 +254,45 @@ void Render::draw(const void *pixelData, bool isDirty)
     }
 }
 
-void Render::handle_event(const Event<CanvasUiUpdateEvent> &e)
+// template void Render::handle_event<CanvasUiUpdateEvent>(const Event<CanvasUiUpdateEvent>&);
+// template void Render::handle_event<CanvasUiBatchUpdateEvent>(const Event<CanvasUiBatchUpdateEvent>&);
+template void Render::handle_event<CanvasUiUpdateEvent>(EventPtr<CanvasUiUpdateEvent>);
+template void Render::handle_event<CanvasUiBatchUpdateEvent>(EventPtr<CanvasUiBatchUpdateEvent>);
+
+template <typename T>
+// void Render::handle_event(const Event<T> &e)
+void Render::handle_event(EventPtr<T> e)
 {
-    spdlog::info("Render <- CANVAS UI");
+    // ENSURE_MAIN_THREAD_CALL(Render::handle_event, this, &e);
+    // ENSURE_MAIN_THREAD_CALL(Render::handle_event_impl, this, &e);
+
+    auto func_ptr = reinterpret_cast<void*>(Render::handle_event_impl<T>);
+    emscripten_sync_run_in_main_runtime_thread(EM_FUNC_SIG_VII, func_ptr, this, &e);
+}
+
+template <>
+inline void Render::handle_event_impl<CanvasUiUpdateEvent>(void* v_this, void* v_e) {
+    int is_worker = EM_ASM_INT(return ENVIRONMENT_IS_WORKER);
+    assert(!is_worker);
+
+    // auto& e = *static_cast<const Event<CanvasUiUpdateEvent>*>(v_e);
+    auto e = *static_cast<EventPtr<CanvasUiUpdateEvent>*>(v_e);
+    auto* _this = static_cast<Render*>(v_this);
+
+    if (!e || !(e.get())) {
+        spdlog::error("Invalid event data!");
+        return;
+    }
+    if (!_this) {
+        spdlog::error("Invalid Render object pointer!");
+        return;
+    }
+
+    SLOG("Render <- CANVAS UI");
 
     // const auto &cue = static_cast<const CanvasUiUpdateEvent &>(e);
-    const auto& cue = e.data;
-    spdlog::info("Drawing random pixel at ({}, {})", cue.x, cue.y);
+    const auto& cue = e->data;
+    SLOG("Drawing random pixel at ({}, {})", cue.x, cue.y);
 
     static bool seeded = false;
     if (!seeded)
@@ -236,16 +307,25 @@ void Render::handle_event(const Event<CanvasUiUpdateEvent> &e)
         static_cast<uint8_t>(std::rand() % 256),
         255};
 
-    if (cue.x >= 0 && cue.x < width && cue.y >= 0 && cue.y < height)
+    if (cue.x >= 0 && cue.x < _this->width && cue.y >= 0 && cue.y < _this->height)
     {
-        spdlog::info("cue.x = {}, cue.y = {}", cue.x, cue.y);
+        SLOG("cue.x = {}, cue.y = {}", cue.x, cue.y);
 
-        commit_to_gpu(pixel, cue.x, cue.y);
+        _this->commit_to_gpu(pixel, cue.x, cue.y);
     }
     else
     {
         spdlog::warn("Pixel coordinates ({}, {}) out of bounds!", cue.x, cue.y);
     }
 
-    draw(nullptr, false);
+    _this->draw(nullptr, false);
 }
+
+template <>
+inline void Render::handle_event_impl<CanvasUiBatchUpdateEvent>(void* v_this, void* v_e) {
+// inline void Render::handle_event_impl<CanvasUiBatchUpdateEvent>(void* v_this, const Event<CanvasUiBatchUpdateEvent> &v_e) {
+// inline void handle_event_impl(const Event<CanvasUiBatchUpdateEvent>& e) {
+    SLOG("Render <- UI BATCH");
+    // e.data;
+}
+
