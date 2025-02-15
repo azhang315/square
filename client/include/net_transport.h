@@ -1,5 +1,5 @@
-// net_transport.h
 #pragma once
+
 #include <cstddef>
 #include <event_dispatch.h>
 #include <boost/asio.hpp>
@@ -7,15 +7,18 @@
 #include <unordered_map>
 #include <chrono>
 #include <log.h>
+#include <emscripten/em_asm.h>
+#include <array>
+#include <thread>
 
 using boost::asio::ip::udp;
 
 class NetTransport : public EventNotifierMixIn<NetTransport>
 {
 private:
+    boost::asio::io_context io_context_;
     udp::socket socket_;
     udp::endpoint server_endpoint_;
-    boost::asio::io_context io_context_;
     std::array<char, 1024> recv_buffer_;
     uint32_t next_sequence_number_ = 0;
 
@@ -27,92 +30,18 @@ private:
 
     std::unordered_map<uint32_t, PendingAck> pending_acks_;
 
-    // void send_message(const std::string& data, bool reliable = false) {
-    //     if (reliable) {
-    //         uint32_t sequence_number = next_sequence_number_++;
-    //         pending_acks_[sequence_number] = {data, std::chrono::steady_clock::now()};
-    //         send_with_sequence(data, sequence_number);
-    //     } else {
-    //         socket_.async_send_to(
-    //             boost::asio::buffer(data),
-    //             server_endpoint_,
-    //             [this](auto error, auto bytes_transferred) { handle_send(error, bytes_transferred); }
-    //         );
-    //     }
-    // }
-
-    // void send_with_sequence(const std::string& data, uint32_t sequence_number) {
-    //     std::string packet = std::to_string(sequence_number) + ":" + data;
-    //     socket_.async_send_to(
-    //         boost::asio::buffer(packet),
-    //         server_endpoint_,
-    //         [this](auto error, auto bytes_transferred) { handle_send(error, bytes_transferred); }
-    //     );
-    // }
-
-    // void handle_send(const boost::system::error_code& error, std::size_t bytes_transferred) {
-    //     if (!error) {
-    //         SLOG("Successfully sent {} bytes.", bytes_transferred);
-    //     } else {
-    //         spdlog::error("Send failed: {}", error.message());
-    //     }
-    // }
-
-    void receivePacket() {
-        socket_.async_receive_from(
-            boost::asio::buffer(recv_buffer_), server_endpoint_,
-            [this](auto error, auto bytes_transferred) { handle_receive(error, bytes_transferred); }
-        );
-    }
-
-    void handle_receive(const boost::system::error_code& error, std::size_t bytes_transferred) {
-        if (!error && bytes_transferred > 0) {
-            std::string message(recv_buffer_.data(), bytes_transferred);
-            SLOG("Received: {}", message);
-
-            // Handle ACKs
-            auto delimiter_pos = message.find(":");
-            if (delimiter_pos != std::string::npos && message.substr(0, 4) == "ACK:") {
-                uint32_t seq_num = std::stoul(message.substr(4));
-                pending_acks_.erase(seq_num);
-                SLOG("ACK received for sequence number: {}", seq_num);
-            }
-        }
-        receivePacket(); // Keep listening for more packets
-    }
+    void send_message(const std::string &data, bool reliable = false);
+    void send_with_sequence(const std::string &data, uint32_t sequence_number);
+    void handle_send(const boost::system::error_code &error, std::size_t bytes_transferred);
+    void receive_packet();
+    void handle_receive(const boost::system::error_code &error, std::size_t bytes_transferred);
+    static void init_posix_socket_bridge();
 
 public:
-    // NetTransport() : socket_(io_context_) {
-    NetTransport() : socket_(io_context_) {
-        SLOG("NetTransport::init()");
-    }
+    NetTransport();
     ~NetTransport() = default;
 
-    void start_udp_client(const std::string& server_ip, unsigned short server_port) {
-        SLOG("Network client: start");
-        socket_.open(udp::v4());
-        server_endpoint_ = udp::endpoint(boost::asio::ip::make_address(server_ip), server_port);
-        receivePacket();
-        // io_context_.run();
-
-        std::thread networkThread([this]() {
-            SLOG("thread: udp client recv");
-            io_context_.run();
-        });
-
-        networkThread.detach();
-    }
-
-    void stop_udp_client() {
-        io_context_.stop();
-        SLOG("Network client: stopped");
-    }
-
-    // void handle_event(const Event<CanvasLocalUpdateEvent> &e)
-    void handle_event(EventPtr<CanvasLocalUpdateEvent> e)
-    {
-        SLOG("NT <- CANVAS LOCAL");
-        // send_message("Canvas update", true); // echo server
-        e->data;
-    }
+    void start_udp_client(const std::string &server_ip, unsigned short server_port);
+    void stop_udp_client();
+    void handle_event(EventPtr<CanvasLocalUpdateEvent> e);
 };
