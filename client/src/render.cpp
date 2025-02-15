@@ -5,9 +5,6 @@
 #include <ctime>
 #include <emscripten/threading.h>
 
-
-
-
 // Shader Compilation Helper
 GLuint compile_shader(GLenum type, const char *source)
 {
@@ -102,22 +99,7 @@ EM_BOOL on_resize(int eventType, const EmscriptenUiEvent *e, void *userData)
 // Render::Render(Canvas* canvas) : canvas(canvas)
 Render::Render(int w, int h) : width(w), height(h), textureID(0), VAO(0), VBO(0), shaderProgram(0)
 {
-
-    if (emscripten_is_main_runtime_thread()) {
-        SLOG("Render::Render(): running in main runtime thread");
-    }
-    if (!emscripten_is_main_browser_thread()) {
-        SLOG("Render::Render(): NOT running in main browser thread: exit");
-        return;
-    }
-    SLOG("Running in main browser thread - proceeding with initialization");
-
-    
-
-    // init();
-
-
-
+    init_gl();
     // adjust_canvas_resolution();
     // apply_webgl_scaling();
     // emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, on_resize);
@@ -137,20 +119,33 @@ Render::~Render()
     if (shaderProgram)
         glDeleteProgram(shaderProgram);
 }
-
 void Render::init_gl()
+{
+    SLOG("init_gl()");
+    //   std::shared_ptr<Render> *m_render_ptr = static_cast<std::shared_ptr<Render> *>(arg);
+    //   (*m_render_ptr)->init_gl();
+    emscripten_sync_run_in_main_runtime_thread(EM_FUNC_SIG_VI, init_gl_impl, this);
+
+    // auto _this = static_cast<Render*>(v_this);
+    // _this->init_gl_impl();
+}
+
+void Render::init_gl_impl(void *v_this)
 {
     int is_worker = EM_ASM_INT(return ENVIRONMENT_IS_WORKER);
     assert(!is_worker);
 
-    SLOG("Render::init() - Setting up WebGL2");
+    auto _this = static_cast<Render *>(v_this);
+    int width = _this->width, height = _this->height;
+    // GLuint shaderProgram = _this->shaderProgram, textureID = _this->textureID, VBO = _this->VBO, VAO = _this->VAO;
+
+    SLOG("init_gl_impl() - Setting up WebGL2");
 
     EmscriptenWebGLContextAttributes attrs;
     emscripten_webgl_init_context_attributes(&attrs);
     attrs.majorVersion = 2;
     attrs.minorVersion = 0;
 
-    
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context("#canvas", &attrs);
     if (context <= 0)
     {
@@ -163,12 +158,12 @@ void Render::init_gl()
 
     GLuint vertexShader = compile_shader(GL_VERTEX_SHADER, vertexShaderSource);
     GLuint fragmentShader = compile_shader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-    shaderProgram = create_program(vertexShader, fragmentShader);
+    _this->shaderProgram = create_program(vertexShader, fragmentShader);
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
+    glGenTextures(1, &_this->textureID);
+    glBindTexture(GL_TEXTURE_2D, _this->textureID);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -181,10 +176,10 @@ void Render::init_gl()
         1.0f, -1.0f,
         -1.0f, 1.0f,
         1.0f, 1.0f};
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glGenVertexArrays(1, &_this->VAO);
+    glGenBuffers(1, &_this->VBO);
+    glBindVertexArray(_this->VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, _this->VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
@@ -193,10 +188,10 @@ void Render::init_gl()
     for (int i = 0; i < 100; ++i)
     {
         uint8_t pixel[4] = {static_cast<uint8_t>(std::rand() % 256), static_cast<uint8_t>(std::rand() % 256), static_cast<uint8_t>(std::rand() % 256), 255};
-        commit_to_gpu(pixel, i, i);
+        _this->commit_to_gpu(pixel, i, i);
     }
 
-    draw(nullptr, false);
+    _this->draw(nullptr, false);
 
     SLOG("WebGL2 initialized successfully!");
 }
@@ -254,44 +249,39 @@ void Render::draw(const void *pixelData, bool isDirty)
     }
 }
 
-// template void Render::handle_event<CanvasUiUpdateEvent>(const Event<CanvasUiUpdateEvent>&);
-// template void Render::handle_event<CanvasUiBatchUpdateEvent>(const Event<CanvasUiBatchUpdateEvent>&);
 template void Render::handle_event<CanvasUiUpdateEvent>(EventPtr<CanvasUiUpdateEvent>);
 template void Render::handle_event<CanvasUiBatchUpdateEvent>(EventPtr<CanvasUiBatchUpdateEvent>);
 
 template <typename T>
-// void Render::handle_event(const Event<T> &e)
 void Render::handle_event(EventPtr<T> e)
 {
-    // ENSURE_MAIN_THREAD_CALL(Render::handle_event, this, &e);
-    // ENSURE_MAIN_THREAD_CALL(Render::handle_event_impl, this, &e);
-
-    auto func_ptr = reinterpret_cast<void*>(Render::handle_event_impl<T>);
+    auto func_ptr = reinterpret_cast<void *>(Render::handle_event_impl<T>);
     emscripten_sync_run_in_main_runtime_thread(EM_FUNC_SIG_VII, func_ptr, this, &e);
 }
 
 template <>
-inline void Render::handle_event_impl<CanvasUiUpdateEvent>(void* v_this, void* v_e) {
+inline void Render::handle_event_impl<CanvasUiUpdateEvent>(void *v_this, void *v_e)
+{
     int is_worker = EM_ASM_INT(return ENVIRONMENT_IS_WORKER);
     assert(!is_worker);
 
-    // auto& e = *static_cast<const Event<CanvasUiUpdateEvent>*>(v_e);
-    auto e = *static_cast<EventPtr<CanvasUiUpdateEvent>*>(v_e);
-    auto* _this = static_cast<Render*>(v_this);
+    auto e = *static_cast<EventPtr<CanvasUiUpdateEvent> *>(v_e);
+    auto *_this = static_cast<Render *>(v_this);
 
-    if (!e || !(e.get())) {
+    if (!e || !(e.get()))
+    {
         spdlog::error("Invalid event data!");
         return;
     }
-    if (!_this) {
+    if (!_this)
+    {
         spdlog::error("Invalid Render object pointer!");
         return;
     }
 
     SLOG("Render <- CANVAS UI");
 
-    // const auto &cue = static_cast<const CanvasUiUpdateEvent &>(e);
-    const auto& cue = e->data;
+    const auto &cue = e->data;
     SLOG("Drawing random pixel at ({}, {})", cue.x, cue.y);
 
     static bool seeded = false;
@@ -322,10 +312,7 @@ inline void Render::handle_event_impl<CanvasUiUpdateEvent>(void* v_this, void* v
 }
 
 template <>
-inline void Render::handle_event_impl<CanvasUiBatchUpdateEvent>(void* v_this, void* v_e) {
-// inline void Render::handle_event_impl<CanvasUiBatchUpdateEvent>(void* v_this, const Event<CanvasUiBatchUpdateEvent> &v_e) {
-// inline void handle_event_impl(const Event<CanvasUiBatchUpdateEvent>& e) {
+inline void Render::handle_event_impl<CanvasUiBatchUpdateEvent>(void *v_this, void *v_e)
+{
     SLOG("Render <- UI BATCH");
-    // e.data;
 }
-

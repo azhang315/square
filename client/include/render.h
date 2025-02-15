@@ -23,20 +23,16 @@ private:
 
     void draw(const void* pixelData, bool isDirty);
     void commit_to_gpu(const void* pixelBuffer, int w, int h);
+
+
 public:
     Render(int w, int h);
     ~Render();
 
     void init_gl();
-
+    static void init_gl_impl(void* v_this);
     template <typename T>
-    // void handle_event(const Event<T>& e);
     void handle_event(EventPtr<T> e);
-    // void handle_event(const Event<CanvasUiUpdateEvent>& e);
-    // void handle_event(const Event<CanvasUiBatchUpdateEvent>& e);
     template <typename T>
-    static inline void handle_event_impl(void* arg, void* v_e);
-    // static inline void handle_event_impl(void* arg, const Event<T>& e);
-    // static inline void handle_event_impl(void* arg, const Event<CanvasUiUpdateEvent>& e);
-    // static inline void handle_event_impl(void* arg, const Event<CanvasUiBatchUpdateEvent>& e);
+    static inline void handle_event_impl(void* v_this, void* v_e);
 };
