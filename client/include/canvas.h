@@ -10,45 +10,43 @@
 #include <net_transport.h>
 #include <log.h>
 
-constexpr uint32_t c_white = 0xFFFFFFFF;
+#ifndef CANVAS_HEIGHT
+#define CANVAS_HEIGHT 128
+#endif
+#ifndef CANVAS_WIDTH
+#define CANVAS_WIDTH 128
+#endif
+constexpr uint32_t COLOR_WHITE = 0xFFFFFFFF;
 
 class Canvas : public EventNotifierMixIn<Canvas> // NetTransport, Render
 {
 public:
     Canvas();
     ~Canvas() = default;
-    static constexpr uint16_t HEIGHT = 256;
-    static constexpr uint16_t WIDTH = 256;
+    static constexpr uint16_t HEIGHT = CANVAS_HEIGHT;
+    static constexpr uint16_t WIDTH = CANVAS_WIDTH;
 
     uint32_t get_pixel(uint16_t x, uint16_t y) const;
     void set_pixel(const uint16_t x, const uint16_t y, const uint32_t c, const uint64_t seq);
     void clear_canvas();
 
-    // void handle_event(const Event<CanvasServerUpdateEvent> &e) {
     void handle_event(EventPtr<CanvasServerUpdateEvent> e)
     {
         SLOG("Canvas <- SERVER UPDATE");
         auto &d = e->data;
         notify_listeners(make_event<CanvasUiBatchUpdateEvent>(d.x, d.y, d.color));
     };
-    // void handle_event(const Event<MouseDownEvent> &e)
     void handle_event(EventPtr<MouseDownEvent> e)
     {
-        SLOG("Canvas <- MOUSE DOWN");
-
         auto &d = e->data;
 
         notify_listeners(make_event<CanvasUiUpdateEvent>(d.x, d.y, d.color));
-
-        SLOG("Canvas <- MOUSE DOWN: continue 1");
 
         // TODO: lock
         int next_seq = pixel_sequence[get_index(d.x, d.y)]++;
         // unlock
 
         notify_listeners(make_event<CanvasLocalUpdateEvent>(d.x, d.y, d.color, next_seq));
-
-        SLOG("Canvas <- MOUSE DOWN: continue 2");
     }
 
     bool is_dirty() const { return render_dirty; };

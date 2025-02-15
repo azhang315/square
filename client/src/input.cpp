@@ -36,7 +36,6 @@ inline void normalizeCSS_impl(void* v_e, void* v_res) {
     // Flip Y-axis: for WebGL
     int flippedY = drawingBufferHeight - static_cast<int>(normalizedY) - 1;
 
-    // return std::make_pair(normalizedX, flippedY);
     auto* res = static_cast<std::pair<double, double>*>(v_res);
     *res = {normalizedX, flippedY};
 }

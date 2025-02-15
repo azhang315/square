@@ -21,7 +21,7 @@ target_compile_options(client PRIVATE
     -gsource-map
     -Wall
     -Wextra
-    -Wpedantic
+    # -Wpedantic
     # "-Wshadow"
     # "-Wconversion"
     # "-Wsign-conversion"
@@ -38,6 +38,8 @@ target_compile_options(client PRIVATE
     -mbulk-memory
     -sSHARED_MEMORY=1
     -sUSE_BOOST_HEADERS=1
+    # Exceptions
+    -sNO_DISABLE_EXCEPTION_CATCHING=1
 )
 
 target_link_options(client PRIVATE 
@@ -70,11 +72,17 @@ target_link_options(client PRIVATE
     -sPROXY_POSIX_SOCKETS=1
     -sPROXY_POSIX_SOCKETS 
     -sPROXY_TO_PTHREAD
+    # Exceptions
+    -sNO_DISABLE_EXCEPTION_CATCHING=1
 )
 
 target_compile_definitions(client PRIVATE
   CANVAS_WIDTH=128
   CANVAS_HEIGHT=128
+  # REMOTE_SERVER_IP="\"127.0.0.1\""
+  # REMOTE_SERVER_PORT=9000
+  # WS_PROXY_BRIDGE_IP="\"127.0.0.1\""
+  # WS_PROXY_BRIDGE_PORT=8080
 )
 
 endif()

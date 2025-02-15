@@ -11,7 +11,7 @@
 Canvas::Canvas() {
     SLOG("Canvas::init()");
 
-    pixel_buffer = std::vector<uint32_t>(WIDTH * HEIGHT, c_white);
+    pixel_buffer = std::vector<uint32_t>(WIDTH * HEIGHT, COLOR_WHITE);
 }
 
 void Canvas::set_pixel(uint16_t x, uint16_t y, uint32_t color, uint64_t seq) {
@@ -22,7 +22,6 @@ void Canvas::set_pixel(uint16_t x, uint16_t y, uint32_t color, uint64_t seq) {
         pixel_buffer[index] = color;
         pixel_sequence[index] = seq;
 
-        // Event<CanvasUiUpdateEvent> e_canvas_ui_update_event(x, y, color); // Don't notify network
         notify_listeners(make_event<CanvasUiUpdateEvent>(x, y, color));
     }
 }
